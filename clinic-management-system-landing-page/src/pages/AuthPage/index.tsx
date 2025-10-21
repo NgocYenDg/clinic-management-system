@@ -15,7 +15,7 @@ import ResetPasswordForm from '@/pages/AuthPage/ResetPasswordForm'
 export type FormType = 'login' | 'register' | 'forgot' | 'reset'
 
 const AuthPage = () => {
-    useTitle('HCMC Metro | Tài Khoản')
+    useTitle('CMS | Tài Khoản')
     useEffect(() => {
         window.scrollTo(0, 0)
     }, [])
