@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import 'tailwindcss';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@plugin 'daisyui' {
+    themes: false;
+}
+
+@theme {
+    --color-primary: #265b9e;
+    --color-primary-red: #d64a33;
+    --color-secondary: #3981ca;
+    --color-accent: #245898;
+    --color-ivory: #f3ecdc;
+    --color-neutral: #0b0809;
+    --color-base-300: #15191e;
+    --radius-field: 0.25rem;
+    --container-container: 1400px;
+    --color-overlay: #515152;
+    --color-primary-light : #057CD2;
+}
+
+/* User-defined CSS Variables */
+:root {
+    --sidebar-logo-height: 70px;
+    --color-brand-600: #4f46e5;
+}
+
+.link {
+    @apply hover:bg-secondary/20 flex cursor-pointer items-center gap-6 rounded-md p-2.5 font-medium no-underline duration-300 select-none;
+}
+
+.active {
+    @apply bg-primary hover:bg-primary text-white;
+}
+
+.active svg {
+    @apply text-white;
+}
+
+.sub-menu.active {
+    @apply text-primary bg-transparent;
+}
+
+.table-tag-blue {
+    @apply w-fit rounded border-2 border-solid border-blue-600 bg-blue-100 px-3 text-center text-sm font-medium text-balance text-blue-600;
+}
+
+.table-tag-green {
+    @apply w-fit rounded border-2 border-solid border-green-600 bg-green-100 px-3 text-center text-sm font-medium text-balance text-green-600;
+}
+
+.table-tag-pink {
+    @apply w-fit rounded border-2 border-solid border-pink-600 bg-pink-100 px-3 text-center text-sm font-medium text-balance text-pink-600;
+}
+
+.table-tag-orange {
+    @apply w-fit rounded border-2 border-solid border-orange-600 bg-orange-100 px-3 text-center text-sm font-medium text-balance text-orange-600;
+}
+
+.table-tag-emerald {
+    @apply w-fit rounded border-2 border-solid border-emerald-600 bg-emerald-100 px-3 text-center text-sm font-medium text-balance text-emerald-600;
+}
+
+.table-tag-indigo {
+    @apply w-fit rounded border-2 border-solid border-indigo-600 bg-indigo-100 px-3 text-center text-sm font-medium text-balance text-indigo-600;
+}
+
+.table-tag-fuchsia {
+    @apply w-fit rounded border-2 border-solid border-fuchsia-600 bg-fuchsia-100 px-3 text-center text-sm font-medium text-balance text-fuchsia-600;
+}
+
+.table-tag-cyan {
+    @apply w-fit rounded border-2 border-solid border-cyan-600 bg-cyan-100 px-3 text-center text-sm font-medium text-balance text-cyan-600;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(252, 252, 252, 0.6);
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background-image: linear-gradient(to bottom, var(--color-accent), var(--color-primary));
+}
+
+::-webkit-scrollbar-thumb:hover {
+    opacity: 90;
+}
+
+/* Prevent Autofill CSS */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--color-primary);
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Error Page Linear Gradient */
+.error-page-linear-gradient {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.font-nunito {
+    font-family: 'Nunito', sans-serif;
+}
+
+.font-oswald {
+    font-family: 'Oswald', sans-serif;
+}
+
+.bg-muted {
+    background-color: hsl(240 3.7% 15.9%);
+}
+
+/* CSS Overwrite */
+.steps .step {
+    min-width: 8rem;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    * {
+        font-family: 'Roboto', sans-serif;
+    }
+}
