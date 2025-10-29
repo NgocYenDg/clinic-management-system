@@ -28,16 +28,6 @@ Our clinic management system is built with cutting-edge technologies to ensure p
 ![Firestore](https://img.shields.io/badge/Firestore-NoSQL-FF6B6B?style=for-the-badge&logo=firebase&logoColor=white)
 ![Authentication](https://img.shields.io/badge/Firebase_Auth-Secure-FF6B6B?style=for-the-badge&logo=firebase&logoColor=white)
 
-### **Development Tools**
-![ESLint](https://img.shields.io/badge/ESLint-9.33.0-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)
-![PostCSS](https://img.shields.io/badge/PostCSS-8.5.6-DD3A0A?style=for-the-badge&logo=postcss&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-![npm](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)
-
-### **Deployment & Hosting**
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)
-
 ## ✨ Features
 
 ### 🔐 **Authentication & Security**
@@ -79,33 +69,11 @@ Our clinic management system is built with cutting-edge technologies to ensure p
 - **Toast Notifications** for user feedback
 - **Search & Filter** capabilities throughout
 
-## 🌟 Live Demo
-
-Experience the application live at: **[life-clinic-management-system.vercel.app](https://life-clinic-management-system.vercel.app)**
 
 ### 🧪 Test Accounts
 - **Doctor**: Create a new account with Doctor role
 - **Receptionist**: Create a new account with Receptionist role
 
-## 📸 Application Preview
-
-Here's a comprehensive preview of all the key features and interfaces in the Life Clinic Management System:
-
-| Feature | Preview |
-|:--------:|:-------:|
-| **Authentication** | ![Login Interface](preview/login.png) |
-| **User Registration** | ![Signup Interface](preview/signup.png) |
-| **Doctor Dashboard** | ![Doctor Dashboard](preview/doctor_dashboard.png) |
-| **Doctor Appointments** | ![Doctor Patient Appointments](preview/doctor_patient_appointment.png) |
-| **Doctor Patient Queue** | ![Doctor Patient Queue](preview/doctor_patient_queue.png) |
-| **Doctor Prescriptions** | ![Doctor Prescriptions](preview/doctor_prescription.png) |
-| **Doctor Medicine Management** | ![Doctor Medicine Management](preview/doctor_medicine.png) |
-| **Receptionist Dashboard** | ![Receptionist Dashboard](preview/receptionist_dashboard.png) |
-| **Receptionist Appointments** | ![Receptionist Appointments](preview/receptionist_appointment.png) |
-| **Receptionist Token Management** | ![Receptionist Token Management](preview/receptionist_tokens.png) |
-| **Receptionist Prescriptions** | ![Receptionist Prescriptions](preview/receptionist_prescription.png) |
-| **Receptionist Billing** | ![Receptionist Billing](preview/receptionist_billing.png) |
-| **Receptionist Billing Reports** | ![Receptionist Billing Reports](preview/receptionist_billing_report.png) |
 
 ## 🚀 Quick Start
 
@@ -113,13 +81,6 @@ Here's a comprehensive preview of all the key features and interfaces in the Lif
 - Node.js (v16 or higher)
 - npm or yarn
 - Firebase project
-
-### 1. Clone and Install
-```bash
-git clone https://github.com/dhruvpatel16120/clinic-management-system.git
-cd clinic-management-system
-npm install
-```
 
 ### 2. Firebase Setup
 1. Go to [Firebase Console](https://console.firebase.google.com/)
@@ -206,45 +167,6 @@ npm run dev
 
 Visit `http://localhost:5173` to see your application!
 
-## 🏗️ Project Structure
-
-```
-src/
-├── components/          # Reusable UI components
-│   ├── LogoutButton.jsx
-│   ├── ProtectedRoute.jsx
-│   ├── EmailVerificationStatus.jsx
-│   └── TokenDisplay.jsx
-├── contexts/           # React context providers
-│   └── AuthContext.jsx
-├── firebase/           # Firebase configuration
-│   └── config.js
-├── hooks/              # Custom React hooks
-│   └── useAuth.js
-├── pages/              # Application pages
-│   ├── auth/           # Authentication pages
-│   │   ├── Login.jsx
-│   │   ├── Signup.jsx
-│   │   ├── ForgotPasswordForm.jsx
-│   │   └── VerifyEmail.jsx
-│   ├── doctor/         # Doctor-specific pages
-│   │   ├── Doctor.jsx
-│   │   ├── appointment/
-│   │   ├── prescriptions/
-│   │   └── token/
-│   ├── receptionist/   # Receptionist-specific pages
-│   │   ├── Receptionist.jsx
-│   │   ├── appointment/
-│   │   ├── billing/
-│   │   ├── prescriptions/
-│   │   └── token/
-│   └── Home.jsx
-├── utils/              # Utility functions
-│   └── authUtils.js
-├── App.jsx             # Main application component
-└── main.jsx            # Application entry point
-```
-
 ## 🔧 Available Scripts
 
 | Command | Description |
@@ -253,12 +175,6 @@ src/
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint for code quality |
-
-## 🌐 Deployment
-
-This application is deployed on **Vercel** and is live at:
-**[life-clinic-management-system.vercel.app](https://life-clinic-management-system.vercel.app)**
-
 
 ## 🔒 Security Features
 
@@ -320,31 +236,11 @@ The system uses Firebase's built-in email verification:
 - **Billing System** with invoice generation
 - **Token System** for patient queue management
 
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to the branch (`git push origin feature/AmazingFeature`)
-5. **Open** a Pull Request
-
 ### Development Guidelines
 - Follow the existing code style
 - Add proper error handling
 - Include relevant tests
 - Update documentation as needed
-
-## 📄 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**Dhruv Patel**
-- GitHub: [@dhruvpatel16120](https://github.com/dhruvpatel16120)
-- Live Demo: [life-clinic-management-system.vercel.app](https://life-clinic-management-system.vercel.app)
 
 ## 🙏 Acknowledgments
 
@@ -354,22 +250,4 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **Tailwind CSS** for the beautiful styling system
 - **Open Source Community** for inspiration and tools
 
-## 📞 Support
 
-If you have any questions or need help:
-
-1. **Check** the [Documentation](DOCUMENTATION.md)
-2. **Open** an [Issue](https://github.com/dhruvpatel16120/clinic-management-system/issues)
-3. **Star** the repository if you find it helpful
-
----
-
-<div align="center">
-
-**⭐ Star this repository if it helped you! ⭐**
-
-[![GitHub stars](https://img.shields.io/github/stars/dhruvpatel16120/clinic-management-system?style=social)](https://github.com/dhruvpatel16120/clinic-management-system)
-[![GitHub forks](https://img.shields.io/github/forks/dhruvpatel16120/clinic-management-system?style=social)](https://github.com/dhruvpatel16120/clinic-management-system)
-[![GitHub issues](https://img.shields.io/github/issues/dhruvpatel16120/clinic-management-system)](https://github.com/dhruvpatel16120/clinic-management-system/issues)
-
-</div>

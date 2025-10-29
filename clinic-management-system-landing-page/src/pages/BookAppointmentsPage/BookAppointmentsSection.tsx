@@ -28,15 +28,30 @@ const BookAppointmentsSection = () => {
 
                 <div className="mt-8 grid grid-cols-2 gap-x-32 gap-y-8 px-40">
                     <div>
-                        <TextInput placeholder="Nhập họ và tên" fieldName="name" value={fullName} error="" onChange={value => setFullName(value)} />
+                        <TextInput 
+                            placeholder="Nhập họ và tên" 
+                            fieldName="name" 
+                            value={fullName} 
+                            error="" 
+                            onChange={value => setFullName(value)} 
+                        />
                     </div>
                     <div>
-                        <DatePicker placeHolder="Chọn ngày tháng năm sinh" date={birthDate} setDate={date => setBirthDate(date)} />
+                        <DatePicker 
+                            placeHolder="Chọn ngày tháng năm sinh" 
+                            date={birthDate} 
+                            setDate={date => setBirthDate(date)}
+                        />
                     </div>
                     <div>
-                        <TextInput placeholder="Email" fieldName="email" value={email} error="" onChange={value => setEmail(value)} />
+                        <TextInput 
+                            placeholder="Email" 
+                            fieldName="email" 
+                            value={email} 
+                            error="" 
+                            onChange={value => setEmail(value)} 
+                        />
                     </div>
-
                     <div>
                         <TextInput
                             placeholder="Nhập số điện thoại"
@@ -46,7 +61,13 @@ const BookAppointmentsSection = () => {
                             onChange={value => setPhone(value)}
                         />
                     </div>
-
+                    <div>
+                        <DatePicker 
+                            placeHolder="Chọn ngày khám bệnh" 
+                            date={birthDate} 
+                            setDate={date => setBirthDate(date)}
+                        />
+                    </div>
                     <div>
                         <SelectInput
                             placeholder="Chọn ca khám"
@@ -55,16 +76,12 @@ const BookAppointmentsSection = () => {
                             onChange={value => setShift(value as Shift)}
                             options={[
                                 {
-                                    label: 'Ca sáng (8:00 - 11:30)',
+                                    label: 'Ca sáng (8:00 - 12:00)',
                                     value: 1
                                 },
                                 {
-                                    label: 'Ca chiều (13:30 - 17:00)',
+                                    label: 'Ca chiều (13:00 - 17:00)',
                                     value: 2
-                                },
-                                {
-                                    label: 'Ca tối (18:00 - 20:30)',
-                                    value: 3
                                 }
                             ]}
                             value={shift}
@@ -85,7 +102,7 @@ const BookAppointmentsSection = () => {
                         ></SelectInput>
                     </div>
 
-                    <div>
+                    {/* <div>
                         <TextInput
                             placeholder="Mô tả triệu chứng"
                             fieldName="symptom"
@@ -93,7 +110,7 @@ const BookAppointmentsSection = () => {
                             value={symptom}
                             onChange={value => setSymptom(value)}
                         ></TextInput>
-                    </div>
+                    </div> */}
                     <div className="col-span-2 mt-4 flex justify-center">
                         <Button
                             text="Đặt lịch khám"
