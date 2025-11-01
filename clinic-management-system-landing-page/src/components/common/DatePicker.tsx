@@ -4,6 +4,7 @@ import { CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/Calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover'
 import { cn } from '@/libs/shadcn-ui'
+import { Matcher } from 'react-day-picker'
 
 type DatePickerProps = {
     disabled?: boolean
@@ -14,9 +15,20 @@ type DatePickerProps = {
     className?: string
     triggerClassName?: string
     placeHolder?: string
+    disableDate?: Matcher | Matcher[];
 }
 
-const DatePicker = ({ disabled = false, date, setDate, error = '', onFocus = ()=> {}, className, triggerClassName, placeHolder }: DatePickerProps) => {
+const DatePicker = ({
+    disabled = false,
+    date,
+    setDate,
+    error = '',
+    onFocus = () => {},
+    className,
+    triggerClassName,
+    placeHolder,
+    disableDate
+}: DatePickerProps) => {
     return (
         <div className={cn(`${className}`)}>
             <Popover>
@@ -33,7 +45,15 @@ const DatePicker = ({ disabled = false, date, setDate, error = '', onFocus = ()=
                     </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={date} onSelect={setDate} initialFocus locale={vi} className='rounded-lg bg-white' />
+                    <Calendar
+                        mode="single"
+                        disabled={disableDate}
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                        locale={vi}
+                        className="rounded-lg bg-white"
+                    />
                 </PopoverContent>
             </Popover>
             {error && <p className="absolute text-sm font-medium text-red-600">{error}</p>}

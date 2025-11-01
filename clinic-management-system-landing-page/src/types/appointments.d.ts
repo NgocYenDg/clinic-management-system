@@ -1,5 +1,5 @@
 declare global {
-    type Shift = 1 | 2 | 3
+    type Shift = 0| 1 // 0: Morning, 1: Afternoon
     type ICreateAppointmentData = {
         fullName?: string
         email?: string
