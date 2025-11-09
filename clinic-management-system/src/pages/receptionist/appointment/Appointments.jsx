@@ -299,7 +299,7 @@ export default function Appointments() {
                className="flex items-center space-x-2 px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors"
              >
                <ArrowLeft className="w-4 h-4" />
-               <span className="text-sm font-medium">Back to Dashboard</span>
+               <span className="text-sm font-medium">Quay về bảng điều khiển</span>
              </Link>
              <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
                <Bell className="w-6 h-6 text-cyan-400" />

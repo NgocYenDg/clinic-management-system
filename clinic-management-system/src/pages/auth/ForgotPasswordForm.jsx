@@ -13,14 +13,14 @@ export default function ForgotPasswordForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      setError('Please enter your email address');
+      setError('Hãy nhập địa chỉ email của bạn');
       return;
     }
     
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      setError('Please enter a valid email address');
+      setError('Hãy nhập địa chỉ email hợp lệ');
       return;
     }
     
@@ -32,14 +32,14 @@ export default function ForgotPasswordForm() {
       await resetPassword(email.trim());
       setIsSubmitted(true);
     } catch (error) {
-      console.error('Password reset error:', error);
+      console.error('Lỗi đặt lại mật khẩu:', error);
       // Handle specific Firebase errors
-      let errorMessage = 'Failed to send reset email. Please try again.';
-      
+      let errorMessage = 'Không thể gửi email đặt lại. Vui lòng thử lại.';
+
       if (error.code === 'auth/user-not-found') {
-        errorMessage = 'No account found with this email address.';
+        errorMessage = 'Không tìm thấy tài khoản với địa chỉ email này.';
       } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Please enter a valid email address.';
+        errorMessage = 'Hãy nhập địa chỉ email hợp lệ.';
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = 'Too many requests. Please try again later.';
       }
@@ -67,22 +67,22 @@ export default function ForgotPasswordForm() {
                 <FaCircleCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <h2 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
-                Check Your Email
+                Kiểm tra email của bạn!
               </h2>
               <p className="text-base text-gray-600 dark:text-gray-400">
-                If an account with <strong>{email}</strong> exists, we've sent a password reset link
+                Nếu tài khoản với <strong>{email}</strong> tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu
               </p>
             </div>
             <div className="space-y-6">
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                  What happens next?
+                  Điều gì xảy ra tiếp theo?
                 </h4>
                 <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                  <li>• Check your email inbox (and spam folder)</li>
-                  <li>• Click the reset link in the email</li>
-                  <li>• Create a new password</li>
-                  <li>• Sign in with your new password</li>
+                  <li>• Kiểm tra hộp thư đến của bạn (và thư rác)</li>
+                  <li>• Nhấp vào liên kết đặt lại trong email</li>
+                  <li>• Tạo mật khẩu mới</li>
+                  <li>• Đăng nhập bằng mật khẩu mới của bạn</li>
                 </ul>
               </div>
               <div className="space-y-3">
@@ -91,12 +91,12 @@ export default function ForgotPasswordForm() {
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <FaEnvelope className="w-4 h-4 mr-2 inline" />
-                  Resend Email
+                  Gửi lại email
                 </button>
                 <Link to="/login">
                   <button className="w-full px-4 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
                     <FaArrowLeft className="w-4 h-4 mr-2 inline" />
-                    Back to Sign In
+                    Quay lại đăng nhập
                   </button>
                 </Link>
               </div>
@@ -104,12 +104,12 @@ export default function ForgotPasswordForm() {
           </div>
           <div className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
             <p>
-              Didn't receive the email? Check your spam folder or{' '}
+              Không nhận được email? Kiểm tra thư rác hoặc{' '}
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors"
               >
-                try again
+                thử lại
               </button>
             </p>
           </div>
@@ -136,10 +136,10 @@ export default function ForgotPasswordForm() {
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2 leading-tight">
-              Forgot Your Password?
+              Bạn quên mật khẩu?
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-              Enter your email address and we'll send you a link to reset your password
+              Nhập địa chỉ email của bạn bên dưới và chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu của bạn.
             </p>
           </div>
           <div className="space-y-6">
@@ -147,14 +147,14 @@ export default function ForgotPasswordForm() {
               {/* Email Field */}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email Address
+                  Email
                 </label>
                 <div className="relative">
                   <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     id="email"
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder="Nhập địa chỉ email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 h-12 border-2 transition-all duration-300 border-gray-200 focus:border-blue-500 dark:border-gray-600 dark:focus:border-blue-400 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -171,12 +171,12 @@ export default function ForgotPasswordForm() {
                 
                 {/* Helpful information */}
                 <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                  <p className="mb-1"><strong>What happens next?</strong></p>
+                  <p className="mb-1"><strong>Các bước tiếp theo?</strong></p>
                   <ul className="space-y-1">
-                    <li>• We'll process your password reset request</li>
-                    <li>• If an account exists, we'll send a reset link</li>
-                    <li>• Check your inbox (and spam folder)</li>
-                    <li>• Click the link to create a new password</li>
+                    <li>• Chúng tôi sẽ xử lý yêu cầu đặt lại mật khẩu của bạn</li>
+                    <li>• Nếu tài khoản tồn tại, chúng tôi sẽ gửi liên kết đặt lại</li>
+                    <li>• Kiểm tra hộp thư đến của bạn (và thư rác)</li>
+                    <li>• Nhấp vào liên kết để tạo mật khẩu mới</li>
                   </ul>
                 </div>
               </div>
@@ -189,11 +189,11 @@ export default function ForgotPasswordForm() {
                 {isLoading ? (
                   <>
                     <FaCircleNotch className="w-5 h-5 mr-2 animate-spin inline" />
-                    Verifying & Sending...
+                    Đang xác minh & Gửi...
                   </>
                 ) : (
                   <>
-                    Send Reset Link
+                    Gửi liên kết đặt lại
                     <FaArrowRight className="w-5 h-5 ml-2 inline" />
                   </>
                 )}
@@ -206,19 +206,19 @@ export default function ForgotPasswordForm() {
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors"
               >
                 <FaArrowLeft className="w-4 h-4 mr-2" />
-                Back to Sign In
+                Quay lại Đăng nhập
               </Link>
             </div>
           </div>
         </div>
         <div className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
           <p>
-            Remember your password?{' '}
+            Nhớ mật khẩu của bạn?{' '}
             <Link 
               to="/login" 
               className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors"
             >
-              Sign in here
+              Đăng nhập tại đây
             </Link>
           </p>
         </div>

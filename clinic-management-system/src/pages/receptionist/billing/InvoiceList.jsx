@@ -409,7 +409,7 @@ export default function InvoiceList() {
               to="/receptionist/billing"
               className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
             >
-              Back to Dashboard
+              Quay về bảng điều khiển
             </Link>
           </div>
         </div>

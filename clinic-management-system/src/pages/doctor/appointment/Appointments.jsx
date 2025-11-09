@@ -252,14 +252,14 @@ export default function DoctorAppointments() {
                className="flex items-center space-x-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
              >
                <ArrowLeft className="w-4 h-4" />
-               <span className="text-sm font-medium">Back to Dashboard</span>
+               <span className="text-sm font-medium">Quay về bảng điều khiển</span>
              </Link>
              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
                <User className="w-6 h-6 text-blue-400" />
              </div>
              <div>
-               <h1 className="text-xl font-bold">Patient Appointments</h1>
-               <p className="text-sm text-slate-400">Welcome, {doctorName || 'Doctor'}</p>
+               <h1 className="text-xl font-bold">Lịch hẹn hôm nay</h1>
+               <p className="text-sm text-slate-400">{doctorName || 'Doctor'}</p>
              </div>
            </div>
            <LogoutButton />
@@ -275,7 +275,7 @@ export default function DoctorAppointments() {
                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search patients..."
+                placeholder="Tìm kiếm bệnh nhân..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
@@ -292,7 +292,7 @@ export default function DoctorAppointments() {
                 }`}
               >
                  <CalendarDays className="w-4 h-4" />
-                <span>Today</span>
+                <span>Hôm nay</span>
               </button>
               <button
                 onClick={() => handleViewModeChange('week')}
@@ -303,7 +303,7 @@ export default function DoctorAppointments() {
                 }`}
               >
                                  <CalendarRange className="w-4 h-4" />
-                <span>Week</span>
+                <span>Tuần</span>
               </button>
               <button
                 onClick={() => handleViewModeChange('month')}
@@ -314,7 +314,7 @@ export default function DoctorAppointments() {
                 }`}
               >
           <CalendarCheck className="w-4 h-4" />
-                <span>Month</span>
+                <span>Tháng</span>
               </button>
             </div>
           </div>
@@ -331,13 +331,13 @@ export default function DoctorAppointments() {
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
                          <Calendar className="w-5 h-5 text-blue-400" />
-            <span>Today's Appointments ({todayAppointments.length})</span>
+            <span>Các lịch hẹn trong hôm nay ({todayAppointments.length})</span>
           </h2>
           
           {todayAppointments.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
-                  <Calendar className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-400">No appointments scheduled for today</p>
+              <Calendar className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-400">Không có lịch hẹn nào trong hôm nay</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -393,7 +393,7 @@ export default function DoctorAppointments() {
                       onClick={() => handleViewPatientDetails(appointment)}
                       className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
                     >
-                      View Details
+                      Xem chi tiết
                     </button>
                     {appointment.status === 'scheduled' && (
                       <>

@@ -232,14 +232,14 @@ export default function TokenQueue() {
               className="flex items-center space-x-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to Dashboard</span>
+              <span className="text-sm font-medium">Quay về bảng điều khiển</span>
             </Link>
             <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
               <Hash className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Patient Queue</h1>
-              <p className="text-sm text-slate-400">View and manage patient tokens for today</p>
+              <h1 className="text-xl font-bold">Bệnh nhân đang chờ</h1>
+              <p className="text-sm text-slate-400">Xem và quản lý các mã lượt khám trong hôm nay</p>
             </div>
           </div>
           <LogoutButton />
@@ -307,7 +307,7 @@ export default function TokenQueue() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div>
-              <h2 className="text-lg font-semibold mb-2">Today's Queue</h2>
+              <h2 className="text-lg font-semibold mb-2">Hàng chờ hôm nay</h2>
               <p className="text-slate-400">{getTodayDisplay()}</p>
             </div>
             
@@ -321,22 +321,22 @@ export default function TokenQueue() {
               
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-400">{queueStats.total}</div>
-                <div className="text-sm text-slate-400">Total Tokens</div>
+                <div className="text-sm text-slate-400">Tổng</div>
               </div>
               
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-400">{queueStats.waiting}</div>
-                <div className="text-sm text-slate-400">Waiting</div>
+                <div className="text-sm text-slate-400">Đang chờ</div>
               </div>
               
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-400">{queueStats.inProgress}</div>
-                <div className="text-sm text-slate-400">In Progress</div>
+                <div className="text-sm text-slate-400">Đang tiến hành</div>
               </div>
               
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">{queueStats.completed}</div>
-                <div className="text-sm text-slate-400">Completed</div>
+                <div className="text-sm text-slate-400">Đã hoàn thành</div>
               </div>
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function TokenQueue() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search by patient name, phone, or token number..."
+                  placeholder="Tìm kiếm tên bệnh nhân, số điện thoại, hoặc mã lượt khám..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
@@ -363,11 +363,11 @@ export default function TokenQueue() {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-blue-400 focus:outline-none"
             >
-              <option value="all">All Status</option>
-              <option value="token_generated">Waiting</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="all">Trạng thái</option>
+              <option value="token_generated">Đang chờ</option>
+              <option value="in_progress">Đang tiến hành</option>
+              <option value="completed">Đã hoàn thành</option>
+              <option value="cancelled">Đã hủy</option>
             </select>
           </div>
         </div>
@@ -378,16 +378,16 @@ export default function TokenQueue() {
             <div className="flex items-center justify-center min-h-96">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                <p className="text-slate-400">Loading queue...</p>
+                <p className="text-slate-400">Đang tải hàng chờ...</p>
               </div>
             </div>
           ) : filteredAppointments.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="text-slate-400 text-lg mb-2">No patients in queue</div>
+              <div className="text-slate-400 text-lg mb-2">Không có bệnh nhân nào trong hàng chờ</div>
               <div className="text-slate-500 text-sm">
                 {searchTerm || filterStatus !== 'all' 
-                  ? 'Try adjusting your search or filters.' 
-                  : 'No appointments scheduled for the selected date.'}
+                  ? 'Hãy điều chỉnh tìm kiếm hoặc bộ lọc.' 
+                  : 'Không có lịch hẹn nào được lên lịch cho ngày đã chọn.'}
               </div>
             </div>
           ) : (
