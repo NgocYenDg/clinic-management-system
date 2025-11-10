@@ -113,8 +113,8 @@ export default function Doctor() {
               <FaUserDoctor className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Doctor Dashboard</h1>
-              <p className="text-sm text-slate-400">Welcome, {currentUser?.displayName || 'Doctor'}</p>
+              <h1 className="text-xl font-bold">Bảng điều khiển dành cho bác sĩ</h1>
+              <p className="text-sm text-slate-400">{currentUser?.displayName || 'Doctor'}</p>
             </div>
           </div>
           <LogoutButton />
@@ -129,90 +129,90 @@ export default function Doctor() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FaCalendar className="w-6 h-6 text-blue-400" />
-                <h3 className="text-lg font-semibold">Today's Appointments</h3>
+                <h3 className="text-lg font-semibold">Lịch hẹn hôm nay</h3>
               </div>
               <FaCalendarDay className="w-4 h-4 text-blue-400" />
             </div>
             {stats.loading ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
-                <p className="text-lg text-slate-400">Loading...</p>
+                <p className="text-lg text-slate-400">Đang tải...</p>
               </div>
             ) : (
               <>
                 <p className="text-3xl font-bold text-blue-400">{stats.todayAppointments}</p>
                 <p className="text-sm text-slate-400 mt-2">
-                  {stats.todayAppointments === 0 ? 'No appointments today' : 
-                   stats.todayAppointments === 1 ? 'appointment scheduled' : 
-                   'appointments scheduled'}
+                  {stats.todayAppointments === 0 ? 'Không có lịch hẹn nào hôm nay' : 
+                   stats.todayAppointments === 1 ? 'Có 1 lịch hẹn hôm nay' : 
+                   'Các lịch hẹn hôm nay'}
                 </p>
               </>
             )}
-            <p className="text-xs text-blue-400 mt-2">Click to view all appointments →</p>
+            <p className="text-xs text-blue-400 mt-2">Nhấn để xem tất cả lịch hẹn →</p>
           </Link>
 
           <Link to="/doctor/tokens" className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FaHashtag className="w-6 h-6 text-yellow-400" />
-                <h3 className="text-lg font-semibold">Patient Queue</h3>
+                <h3 className="text-lg font-semibold">Bệnh nhân đang chờ</h3>
               </div>
               <FaHashtag className="w-4 h-4 text-yellow-400" />
             </div>
             {stats.loading ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-400"></div>
-                <p className="text-lg text-slate-400">Loading...</p>
+                <p className="text-lg text-slate-400">Đang tải...</p>
               </div>
             ) : (
               <>
                 <p className="text-3xl font-bold text-yellow-400">{stats.waitingPatients}</p>
                 <p className="text-sm text-slate-400 mt-2">
-                  {stats.waitingPatients === 0 ? 'No patients waiting' :
-                   stats.waitingPatients === 1 ? 'patient waiting' :
-                   'patients waiting'}
+                  {stats.waitingPatients === 0 ? 'Không có bệnh nhân nào đang chờ' :
+                   stats.waitingPatients === 1 ? 'Có 1 bệnh nhân đang chờ' :
+                   'Các bệnh nhân đang chờ'}
                 </p>
               </>
             )}
-            <p className="text-xs text-yellow-400 mt-2">Click to view queue →</p>
+            <p className="text-xs text-yellow-400 mt-2">Nhấn để xem tất cả bệnh nhân →</p>
           </Link>
 
           <Link to="/doctor/prescriptions" className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FaPills className="w-6 h-6 text-purple-400" />
-                <h3 className="text-lg font-semibold">Prescriptions</h3>
+                <h3 className="text-lg font-semibold">Đơn thuốc</h3>
               </div>
               <FaFileLines className="w-4 h-4 text-purple-400" />
             </div>
             {stats.loading ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-400"></div>
-                <p className="text-lg text-slate-400">Loading...</p>
+                <p className="text-lg text-slate-400">Đang tải...</p>
               </div>
             ) : (
               <>
                 <p className="text-3xl font-bold text-purple-400">{stats.weeklyPrescriptions}</p>
                 <p className="text-sm text-slate-400 mt-2">
-                  {stats.weeklyPrescriptions === 0 ? 'No prescriptions this week' :
-                   'prescriptions this week'}
+                  {stats.weeklyPrescriptions === 0 ? 'Không có đơn thuốc nào trong tuần này' :
+                   'Các đơn thuốc trong tuần này'}
                 </p>
               </>
             )}
-            <p className="text-xs text-purple-400 mt-2">Click to manage prescriptions →</p>
+            <p className="text-xs text-purple-400 mt-2">Nhấn để quản lý đơn thuốc →</p>
           </Link>
         </div>
 
         {/* Quick Actions */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-bold mb-4">Các thao tác nhanh</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/doctor/appointments" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
               <div className="flex items-center space-x-3">
                 <FaCalendar className="w-5 h-5 text-blue-400" />
                 <div>
-                  <h3 className="font-semibold">View Appointments</h3>
-                  <p className="text-sm text-slate-400">Manage patient appointments</p>
+                  <h3 className="font-semibold">Xem lịch hẹn</h3>
+                  <p className="text-sm text-slate-400">Quản lý lịch hẹn bệnh nhân</p>
                 </div>
               </div>
             </Link>
@@ -221,8 +221,8 @@ export default function Doctor() {
               <div className="flex items-center space-x-3">
                 <FaPlus className="w-5 h-5 text-green-400" />
                 <div>
-                  <h3 className="font-semibold">New Prescription</h3>
-                  <p className="text-sm text-slate-400">Create prescription for patient</p>
+                  <h3 className="font-semibold">Tạo đơn thuốc</h3>
+                  <p className="text-sm text-slate-400">Tạo đơn thuốc cho bệnh nhân</p>
                 </div>
               </div>
             </Link>
@@ -231,28 +231,28 @@ export default function Doctor() {
               <div className="flex items-center space-x-3">
                 <FaFileLines className="w-5 h-5 text-purple-400" />
                 <div>
-                  <h3 className="font-semibold">View Prescriptions</h3>
-                  <p className="text-sm text-slate-400">Manage all prescriptions</p>
+                  <h3 className="font-semibold">Xem đơn thuốc</h3>
+                  <p className="text-sm text-slate-400">Quản lý tất cả các đơn thuốc</p>
                 </div>
               </div>
             </Link>
 
-            <Link to="/doctor/prescriptions/medicines" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+            {/* <Link to="/doctor/prescriptions/medicines" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
               <div className="flex items-center space-x-3">
                 <FaPills className="w-5 h-5 text-yellow-400" />
                 <div>
-                  <h3 className="font-semibold">Manage Medicines</h3>
-                  <p className="text-sm text-slate-400">Add/edit medicine inventory</p>
+                  <h3 className="font-semibold">Quản lý thuốc</h3>
+                  <p className="text-sm text-slate-400">Thêm/sửa đổi kho thuốc</p>
                 </div>
               </div>
-            </Link>
+            </Link> */}
 
             <Link to="/doctor/tokens" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
               <div className="flex items-center space-x-3">
                 <FaHashtag className="w-5 h-5 text-blue-400" />
                 <div>
-                  <h3 className="font-semibold">Patient Queue</h3>
-                  <p className="text-sm text-slate-400">View and manage patient tokens</p>
+                  <h3 className="font-semibold">Bệnh nhân đang chờ</h3>
+                  <p className="text-sm text-slate-400">Xem và quản lý bệnh nhân đang chờ</p>
                 </div>
               </div>
             </Link>
@@ -261,22 +261,22 @@ export default function Doctor() {
 
         {/* User Info Card */}
         <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-          <h2 className="text-xl font-bold mb-4">Account Information</h2>
+          <h2 className="text-xl font-bold mb-4">Thông tin tài khoản</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-slate-400 text-sm">Email</p>
               <p className="text-white font-medium">{currentUser?.email}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Role</p>
+              <p className="text-slate-400 text-sm">Chức vụ</p>
               <p className="text-blue-400 font-medium capitalize">{userRole}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Full Name</p>
+              <p className="text-slate-400 text-sm">Họ và tên</p>
               <p className="text-white font-medium">{currentUser?.displayName}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Email Verified</p>
+              <p className="text-slate-400 text-sm">Xác thực email</p>
               <EmailVerificationStatus />
             </div>
           </div>

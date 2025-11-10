@@ -69,7 +69,7 @@ export default function EmailVerificationStatus() {
             ) : (
               <FaArrowsRotate className="w-3 h-3" />
             )}
-            <span>{isChecking ? 'Checking...' : 'Check Again'}</span>
+            <span>{isChecking ? 'Đang kiểm tra...' : 'Kiểm tra lại'}</span>
           </button>
           
           <button 
@@ -82,14 +82,14 @@ export default function EmailVerificationStatus() {
             ) : (
               <FaEnvelope className="w-3 h-3" />
             )}
-            <span>{isSending ? 'Sending...' : 'Resend Email'}</span>
+            <span>{isSending ? 'Đang gửi...' : 'Gửi lại email'}</span>
           </button>
         </div>
       )}
       
       {emailSent && (
         <div className="text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded">
-          ✓ Verification email sent!
+          ✓ Đã gửi email xác thực!
         </div>
       )}
     </div>

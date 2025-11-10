@@ -133,7 +133,7 @@ export default function BillingDashboard() {
               to="/receptionist"
               className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors"
             >
-              Back to Dashboard
+              Quay về bảng điều khiển
             </Link>
           </div>
         </div>

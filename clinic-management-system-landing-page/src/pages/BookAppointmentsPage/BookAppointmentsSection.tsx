@@ -349,6 +349,11 @@ const BookAppointmentsSection = () => {
                                 <FontAwesomeIcon icon={faCheck} size="10x" className="text-green-500" />
                             </div>
                             <div>Đặt lịch khám thành công! Vui lòng đến phòng khám đúng giờ đã hẹn để hoàn tất thủ tục khám bệnh.</div>
+
+                            {/* <div className="flex flex-row items-center justify-center gap-4">
+                                <FontAwesomeIcon icon={faCheck} size="10x" className="text-red-500" />
+                            </div>
+                            <div>Đặt lịch khám không thành công! Vui lòng kiểm tra lại thông tin và thử lại.</div> */}
                         </div>
                         <div>
                             <Button

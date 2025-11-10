@@ -396,15 +396,15 @@ export default function CreatePrescription() {
               className="flex items-center space-x-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to Prescriptions</span>
+              <span className="text-sm font-medium">Trở về trang đơn thuốc</span>
             </Link>
             <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
               <FileText className="w-6 h-6 text-green-400" />
             </div>
-                         <div>
-               <h1 className="text-xl font-bold">{isEditMode ? 'Edit Prescription' : 'Create Prescription'}</h1>
+            <div>
+               <h1 className="text-xl font-bold">{isEditMode ? 'Chỉnh sửa đơn thuốc' : 'Tạo đơn thuốc'}</h1>
                <p className="text-sm text-slate-400">
-                 {isEditMode ? 'Update prescription details' : id ? 'Create prescription from appointment' : 'Write a new prescription for patient'}
+                 {isEditMode ? 'Cập nhật thông tin đơn thuốc' : id ? 'Tạo đơn thuốc từ cuộc hẹn' : 'Viết đơn thuốc mới cho bệnh nhân'}
                </p>
              </div>
           </div>
@@ -418,7 +418,7 @@ export default function CreatePrescription() {
            <div className="flex items-center justify-center min-h-96">
              <div className="text-center">
                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-               <p className="text-slate-400">Loading prescription data...</p>
+               <p className="text-slate-400">Đang tải dữ liệu đơn thuốc...</p>
              </div>
            </div>
          ) : (
@@ -427,16 +427,16 @@ export default function CreatePrescription() {
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
             <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
               <User className="w-5 h-5 text-blue-400" />
-              <span>Patient Information</span>
+              <span>Thông tin bệnh nhân</span>
             </h2>
             
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
-                 <label className="block text-sm font-medium text-slate-300 mb-2">Select Patient</label>
+                 <label className="block text-sm font-medium text-slate-300 mb-2">Chọn bệnh nhân</label>
                  <div className="flex space-x-2">
                    <input
                      type="text"
-                     placeholder="Click to select a patient..."
+                     placeholder="Nhấn để chọn bệnh nhân..."
                      value={formData.patientName}
                      readOnly
                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none cursor-pointer"
@@ -448,13 +448,13 @@ export default function CreatePrescription() {
                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center space-x-2"
                    >
                      <Search className="w-4 h-4" />
-                     <span>Select</span>
+                     <span>Chọn</span>
                    </button>
                  </div>
                </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Prescription Date</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Ngày kê đơn</label>
                 <input
                   type="date"
                   value={formData.prescriptionDate}
@@ -464,38 +464,38 @@ export default function CreatePrescription() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Patient Age</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Tuổi bệnh nhân</label>
                 <input
                   type="text"
                   value={formData.patientAge}
                   onChange={(e) => setFormData(prev => ({ ...prev, patientAge: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
-                  placeholder="Age"
+                  placeholder="Tuổi"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Patient Gender</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Giới tính</label>
                                   <select
                     value={formData.patientGender}
                     onChange={(e) => setFormData(prev => ({ ...prev, patientGender: e.target.value }))}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-blue-400 focus:outline-none"
                   >
-                    <option value="" className="text-black">Select Gender</option>
-                    <option value="Male" className="text-black">Male</option>
-                    <option value="Female" className="text-black">Female</option>
-                    <option value="Other" className="text-black">Other</option>
+                    <option value="" className="text-black">--</option>
+                    <option value="Male" className="text-black">Nam</option>
+                    <option value="Female" className="text-black">Nữ</option>
+                    <option value="Other" className="text-black">Khác</option>
                   </select>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Phone Number</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Số điện thoại</label>
                 <input
                   type="tel"
                   value={formData.patientPhone}
                   onChange={(e) => setFormData(prev => ({ ...prev, patientPhone: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
-                  placeholder="Phone number"
+                  placeholder="Số điện thoại"
                 />
               </div>
               
@@ -506,7 +506,7 @@ export default function CreatePrescription() {
                   value={formData.patientEmail}
                   onChange={(e) => setFormData(prev => ({ ...prev, patientEmail: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
-                  placeholder="Email address"
+                  placeholder="Địa chỉ email"
                 />
               </div>
             </div>
@@ -516,29 +516,29 @@ export default function CreatePrescription() {
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
             <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
               <AlertTriangle className="w-5 h-5 text-yellow-400" />
-              <span>Diagnosis & Symptoms</span>
+              <span>Triệu chứng và Chẩn đoán</span>
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Diagnosis</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Chẩn đoán</label>
                 <textarea
                   value={formData.diagnosis}
                   onChange={(e) => setFormData(prev => ({ ...prev, diagnosis: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
                   rows="3"
-                  placeholder="Enter diagnosis..."
+                  placeholder="Nhập chẩn đoán..."
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Symptoms</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Triệu chứng</label>
                 <textarea
                   value={formData.symptoms}
                   onChange={(e) => setFormData(prev => ({ ...prev, symptoms: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
                   rows="3"
-                  placeholder="Enter symptoms..."
+                  placeholder="Nhập triệu chứng..."
                 />
               </div>
             </div>
@@ -549,7 +549,7 @@ export default function CreatePrescription() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold flex items-center space-x-2">
                 <Pill className="w-5 h-5 text-green-400" />
-                <span>Medicines ({formData.medicines.length})</span>
+                <span>Thuốc ({formData.medicines.length})</span>
               </h2>
               
               <button
@@ -558,7 +558,7 @@ export default function CreatePrescription() {
                 className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Medicine</span>
+                <span>Thêm thuốc</span>
               </button>
             </div>
             
@@ -689,24 +689,24 @@ export default function CreatePrescription() {
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
             <h2 className="text-lg font-semibold mb-4 flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-blue-400" />
-              <span>Instructions & Follow-up</span>
+              <span>Hướng dẫn và Theo dõi</span>
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">General Instructions</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Hướng dẫn chung</label>
                 <textarea
                   value={formData.instructions}
                   onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
                   rows="3"
-                  placeholder="General instructions for the patient..."
+                  placeholder="Hướng dẫn chung cho bệnh nhân..."
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Follow-up Date</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Ngày hẹn tái khám</label>
                   <input
                     type="date"
                     value={formData.followUpDate}
@@ -716,28 +716,28 @@ export default function CreatePrescription() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Trạng thái</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-blue-400 focus:outline-none"
                   >
-                    <option value="active" className="text-black">Active</option>
-                    <option value="completed" className="text-black">Completed</option>
-                    <option value="discontinued" className="text-black">Discontinued</option>
-                    <option value="pending" className="text-black">Pending</option>
+                    <option value="active" className="text-black">Đang hoạt động</option>
+                    <option value="completed" className="text-black">Đã hoàn thành</option>
+                    <option value="discontinued" className="text-black">Ngừng</option>
+                    <option value="pending" className="text-black">Đang chờ</option>
                   </select>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Additional Notes</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Ghi chú thêm</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
                   rows="3"
-                  placeholder="Any additional notes..."
+                  placeholder="Ghi chú thêm..."
                 />
               </div>
             </div>
@@ -749,7 +749,7 @@ export default function CreatePrescription() {
               to="/doctor/prescriptions"
               className="px-6 py-3 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors"
             >
-              Cancel
+              Hủy
             </Link>
             <button
               type="submit"
@@ -761,7 +761,7 @@ export default function CreatePrescription() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-                             <span>{loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Prescription' : 'Create Prescription')}</span>
+              <span>{loading ? (isEditMode ? 'Đang cập nhật...' : 'Đang tạo...') : (isEditMode ? 'Cập nhật đơn thuốc' : 'Tạo đơn thuốc')}</span>
             </button>
                      </div>
            </form>
@@ -774,7 +774,7 @@ export default function CreatePrescription() {
            <div className="bg-slate-800 border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
              {/* Modal Header */}
              <div className="flex justify-between items-center p-6 border-b border-white/10">
-               <h2 className="text-xl font-bold text-white">Select Patient</h2>
+               <h2 className="text-xl font-bold text-white">Chọn bệnh nhân</h2>
                <button
                  onClick={() => {
                    setShowPatientModal(false)
@@ -790,7 +790,7 @@ export default function CreatePrescription() {
              <div className="p-6 border-b border-white/10">
                <input
                  type="text"
-                 placeholder="Search patients by name, phone, or email..."
+                 placeholder="Tìm kiếm bệnh nhân bằng tên, số điện thoại hoặc email..."
                  value={patientSearchTerm}
                  onChange={(e) => setPatientSearchTerm(e.target.value)}
                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
@@ -829,10 +829,10 @@ export default function CreatePrescription() {
                ) : (
                  <div className="p-8 text-center">
                    <div className="text-slate-400 text-lg mb-2">
-                     {patientSearchTerm ? 'No patients found matching your search.' : 'No patients available.'}
+                     {patientSearchTerm ? 'Không tìm thấy bệnh nhân nào phù hợp với tìm kiếm của bạn.' : 'Không có bệnh nhân nào.'}
                    </div>
                    <div className="text-slate-500 text-sm">
-                     {patientSearchTerm ? 'Try a different search term.' : 'Create appointments first to see patients here.'}
+                     {patientSearchTerm ? 'Hãy thử một từ khóa tìm kiếm khác.' : 'Tạo lịch hẹn trước để xem bệnh nhân ở đây.'}
                    </div>
                  </div>
                )}
@@ -847,7 +847,7 @@ export default function CreatePrescription() {
                  }}
                  className="px-6 py-2 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors"
                >
-                 Cancel
+                  Đóng
                </button>
              </div>
            </div>

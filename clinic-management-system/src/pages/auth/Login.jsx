@@ -93,11 +93,11 @@ export default function Login() {
               <FaHospital className="w-10 h-10 text-slate-900" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-sky-400 bg-clip-text text-transparent mb-3">
-              Welcome Back
+              Đăng nhập
             </h1>
-            <p className="text-lg text-slate-300 leading-relaxed">
+            {/* <p className="text-lg text-slate-300 leading-relaxed">
               Access your professional healthcare dashboard
-            </p>
+            </p> */}
           </div>
 
           {/* Form Card */}
@@ -156,7 +156,7 @@ export default function Login() {
               {/* Email Field */}
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-slate-200">
-                  Email Address
+                  Email
                 </label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-300">
@@ -164,7 +164,7 @@ export default function Login() {
                   </div>
                   <input 
                     type="email" 
-                    placeholder="Enter your email"
+                    placeholder="Nhập địa chỉ email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-12 pr-4 py-4 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-slate-400 outline-none transition-all duration-300 focus:border-blue-400 focus:bg-white/10 focus:shadow-lg focus:shadow-blue-400/20"
@@ -176,7 +176,7 @@ export default function Login() {
               {/* Password Field */}
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-slate-200">
-                  Password
+                  Mật khẩu
                 </label>
                 <div className="relative group">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-300">
@@ -184,7 +184,7 @@ export default function Login() {
                   </div>
                   <input 
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Nhập mật khẩu"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-12 pr-12 py-4 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-slate-400 outline-none transition-all duration-300 focus:border-blue-400 focus:bg-white/10 focus:shadow-lg focus:shadow-blue-400/20"
@@ -205,7 +205,7 @@ export default function Login() {
                     to="/forgot-password"
                     className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors duration-300 hover:underline"
                   >
-                    Forgot password?
+                    Quên mật khẩu?
                   </Link>
                 </div>
               </div>
@@ -226,12 +226,12 @@ export default function Login() {
                 {isLoading ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Signing In...</span>
+                    <span>Đang đăng nhập...</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center space-x-2">
                     <FaArrowRight className="w-5 h-5" />
-                    <span>Sign In</span>
+                    <span>Đăng nhập</span>
                     <FaStar className="w-4 h-4" />
                   </div>
                 )}
@@ -239,17 +239,17 @@ export default function Login() {
             </form>
 
             {/* Divider */}
-            <div className="relative my-8">
+            {/* <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white/5 text-slate-400">New to our team?</span>
               </div>
-            </div>
+            </div> */}
 
             {/* Sign Up Link */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <Link 
                 to="/signup" 
                 className="inline-flex items-center justify-center w-full py-3 px-6 border-2 border-white/20 bg-white/5 hover:border-blue-400/40 hover:bg-blue-400/10 text-white font-medium rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-blue-400/20"
@@ -257,7 +257,7 @@ export default function Login() {
                 <FaShieldHalved className="w-4 h-4 mr-2" />
                 Create an account
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Footer */}

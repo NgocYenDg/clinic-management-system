@@ -185,14 +185,14 @@ export default function Prescriptions() {
               className="flex items-center space-x-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to Dashboard</span>
+              <span className="text-sm font-medium">Quay về bảng điều khiển</span>
             </Link>
             <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
               <Pill className="w-6 h-6 text-green-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Prescriptions</h1>
-              <p className="text-sm text-slate-400">Manage patient prescriptions</p>
+              <h1 className="text-xl font-bold">Đơn thuốc</h1>
+              <p className="text-sm text-slate-400">Quản lý đơn thuốc bệnh nhân</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -201,15 +201,15 @@ export default function Prescriptions() {
               className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>New Prescription</span>
+              <span>Tạo đơn thuốc</span>
             </Link>
-            <Link
+            {/* <Link
               to="/doctor/prescriptions/medicines"
               className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
             >
               <Pill className="w-4 h-4" />
-              <span>Manage Medicines</span>
-            </Link>
+              <span>Quản lý thuốc</span>
+            </Link> */}
             <LogoutButton />
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function Prescriptions() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search patients or diagnosis..."
+                placeholder="Tìm kiếm bệnh nhân hoặc chẩn đoán..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-400 focus:outline-none"
@@ -241,7 +241,7 @@ export default function Prescriptions() {
                 }`}
               >
                 <CalendarDays className="w-4 h-4" />
-                <span>Today</span>
+                <span>Hôm nay</span>
               </button>
               <button
                 onClick={() => setViewMode('week')}
@@ -252,7 +252,7 @@ export default function Prescriptions() {
                 }`}
               >
                 <CalendarRange className="w-4 h-4" />
-                <span>Week</span>
+                <span>Tuần</span>
               </button>
               <button
                 onClick={() => setViewMode('month')}
@@ -263,7 +263,7 @@ export default function Prescriptions() {
                 }`}
               >
                 <CalendarCheck className="w-4 h-4" />
-                <span>Month</span>
+                <span>Tháng</span>
               </button>
               <button
                 onClick={() => setViewMode('all')}
@@ -274,7 +274,7 @@ export default function Prescriptions() {
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                <span>All</span>
+                <span>Tất cả</span>
               </button>
             </div>
 
@@ -283,11 +283,11 @@ export default function Prescriptions() {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-blue-400 focus:outline-none"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="discontinued">Discontinued</option>
-              <option value="pending">Pending</option>
+              <option value="all">Tất cả trạng thái</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="completed">Đã hoàn thành</option>
+              <option value="discontinued">Đã ngừng</option>
+              <option value="pending">Đang chờ</option>
             </select>
           </div>
           
@@ -303,18 +303,18 @@ export default function Prescriptions() {
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
             <FileText className="w-5 h-5 text-green-400" />
-            <span>Today's Prescriptions ({todayPrescriptions.length})</span>
+            <span>Đơn thuốc hôm nay ({todayPrescriptions.length})</span>
           </h2>
           
           {loading ? (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
-              <p className="text-slate-400 mt-4">Loading prescriptions...</p>
+              <p className="text-slate-400 mt-4">Đang tải đơn thuốc...</p>
             </div>
           ) : todayPrescriptions.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
               <FileText className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-400">No prescriptions for today</p>
+              <p className="text-slate-400">Không có đơn thuốc nào trong hôm nay</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -375,7 +375,7 @@ export default function Prescriptions() {
                       className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors flex items-center justify-center space-x-2"
                     >
                       <Eye className="w-4 h-4" />
-                      <span>View</span>
+                      <span>Xem</span>
                     </Link>
                     <Link
                       to={`/doctor/prescriptions/edit/${prescription.id}`}
