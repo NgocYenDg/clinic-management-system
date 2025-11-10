@@ -10,14 +10,12 @@ type SocialLink = {
 type NavigationTab = {
     label: string
     href: string
-    roles?: IRole[]
 }
 
 export const NAVIGATION_TABS: NavigationTab[] = [
     { label: 'trang chủ', href: '/' },
     { label: 'dịch vụ', href: '/our-services' },
-    { label: 'đặt lịch', href: '/book-appointment' },
-    // { label: 'quản lý', href: '/dashboard', roles: ['admin'] }
+    { label: 'đặt lịch', href: '/book-appointment' }
 ]
 
 export const SOCIAL_LINKS: SocialLink[] = [

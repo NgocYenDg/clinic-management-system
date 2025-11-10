@@ -1,20 +1,14 @@
+import { axiosInstance } from '@/hooks/useAxiosIns'
 import { useMutation } from '@tanstack/react-query'
 
-import useAxiosIns from '@/hooks/useAxiosIns'
-const appointmentService = () => {
-    const axios = useAxiosIns()
-
-    const createAppointmentMutation = useMutation({
-        mutationFn: (appointmentData: ICreateAppointmentData) => {
-            console.log('Appointment Data:', appointmentData)
-            return Promise.resolve()
-            // return axios.post('/appointments', appointmentData)
-        }
+const useAppointmentService = () => {
+    const createAppointment = useMutation({
+        mutationFn: (appointmentData: ICreateAppointmentData) => axiosInstance.post('/appointments', appointmentData).then(res => res.data)
     })
 
     return {
-        createAppointmentMutation
+        createAppointment
     }
 }
 
-export default appointmentService
+export default useAppointmentService

@@ -4,9 +4,8 @@ import SelectInput from '@/components/common/SelectInput'
 import Button from '@/components/common/Button'
 import { useState } from 'react'
 import appointmentService from '@/services/appointmentService'
-import medicalPackageService from '@/services/medicalPackageService'
-import paymentService from '@/services/paymentService'
-import { format, set } from 'date-fns'
+import useMedicalPackageService from '@/services/medicalPackageService'
+import { format } from 'date-fns'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import classNames from 'classnames'
@@ -14,22 +13,18 @@ import classNames from 'classnames'
 type Shift = 1 | 2
 type ValidationResult = 'failed' | 'passed'
 const BookAppointmentsSection = () => {
+    const { medicalPackages } = useMedicalPackageService()
     const [medicalPackageId, setMedicalPackageId] = useState<number>()
     const [bookingDate, setBookingDate] = useState<Date>()
     const [shift, setShift] = useState<Shift>()
-    const { medicalPackages } = medicalPackageService()
 
     const [fullName, setFullName] = useState('')
-    // const [birthDate, setBirthDate] = useState<Date>()
     const [phoneNumber, setPhone] = useState('')
     const [otp, setOtp] = useState('')
     const [email, setEmail] = useState('')
     const [verifiedPhone, setVerifiedPhone] = useState(false)
     const [showOTP, setShowOTP] = useState(false)
-
-    const { qrCode, getQRCode } = paymentService()
-
-    const { createAppointmentMutation } = appointmentService()
+    const { createAppointment } = appointmentService()
     const [step, setStep] = useState<'package' | 'patientInfo' | 'payment' | 'finalStep'>('package')
 
     const [errors, setErrors] = useState({
@@ -66,10 +61,12 @@ const BookAppointmentsSection = () => {
                                     }))
                                     setMedicalPackageId(Number(value))
                                 }}
-                                options={medicalPackages.map(medicalPackage => ({
-                                    label: medicalPackage.name,
-                                    value: medicalPackage.medicalPackageId
-                                }))}
+                                options={
+                                    medicalPackages.data?.map(medicalPackage => ({
+                                        label: medicalPackage.name,
+                                        value: medicalPackage.medicalPackageId
+                                    })) ?? []
+                                }
                             ></SelectInput>
                         </div>
 
@@ -318,7 +315,7 @@ const BookAppointmentsSection = () => {
                                 <div className="font-semibold">Email:</div>
                                 <div>{email}</div>
                                 <div className="font-semibold">Gói khám:</div>
-                                <div>{medicalPackages.find(pkg => pkg.medicalPackageId === medicalPackageId)?.name}</div>
+                                <div>{medicalPackages.data?.find(pkg => pkg.medicalPackageId === medicalPackageId)?.name}</div>
                                 <div className="font-semibold">Ngày khám:</div>
                                 <div>{bookingDate ? format(bookingDate, 'dd/MM/yyyy') : ''}</div>
                                 <div className="font-semibold">Ca khám:</div>
@@ -348,16 +345,6 @@ const BookAppointmentsSection = () => {
                 {step === 'finalStep' && (
                     <div className="flex flex-col items-center justify-center gap-4">
                         <div>
-                            {/* <div className="flex flex-col items-center gap-2">
-                                <FontAwesomeIcon
-                                    icon={faCheck}
-                                    size="1000x"
-                                    className={classNames({
-                                        'text-green-500': verifiedPhone,
-                                        'text-gray-300': !verifiedPhone
-                                    })}
-                                />
-                            </div> */}
                             <div className="flex flex-row items-center justify-center gap-4">
                                 <FontAwesomeIcon icon={faCheck} size="10x" className="text-green-500" />
                             </div>
@@ -368,17 +355,16 @@ const BookAppointmentsSection = () => {
                                 text="Đặt lịch khám khác"
                                 variant="primary"
                                 onClick={() => {
-                                    // call api to xác nhận gói khám đã chọn
-                                    setFullName(''),
-                                        setPhone(''),
-                                        setEmail(''),
-                                        setVerifiedPhone(false),
-                                        setShowOTP(false),
-                                        setOtp(''),
-                                        setMedicalPackageId(undefined),
-                                        setBookingDate(undefined),
-                                        setShift(undefined),
-                                        setStep('package')
+                                    setFullName('')
+                                    setPhone('')
+                                    setEmail('')
+                                    setVerifiedPhone(false)
+                                    setShowOTP(false)
+                                    setOtp('')
+                                    setMedicalPackageId(undefined)
+                                    setBookingDate(undefined)
+                                    setShift(undefined)
+                                    setStep('package')
                                 }}
                             ></Button>
                         </div>
