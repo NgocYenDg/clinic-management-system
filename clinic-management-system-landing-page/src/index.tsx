@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css'
 
 import getRouter from '@/routes'
 import './index.css'
+import { ToastContainer } from 'react-toastify'
 
 const GG_CLIENT_ID = import.meta.env.VITE_GG_CLIENT_ID
 const queryClient = new QueryClient()
@@ -15,6 +16,7 @@ createRoot(document.getElementById('root')!).render(
     <GoogleOAuthProvider clientId={GG_CLIENT_ID}>
         <QueryClientProvider client={queryClient}>
             <RouterProvider router={getRouter(environment)} />
+            <ToastContainer />
         </QueryClientProvider>
     </GoogleOAuthProvider>
 )

@@ -1,9 +1,10 @@
 declare global {
     interface IMedicalPackage {
-        medicalPackageId: number
+        medicalPackageId: string
         name: string
         description: string
         price: number
+        image: string
     }
 }
 
