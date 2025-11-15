@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Appbar from '@/components/layout/Appbar'
 import Footer from '@/components/layout/Footer'
+import Chatbox from '@/components/ui/Chatbox'
 
 const MainLayout = () => {
     return (
@@ -10,6 +11,7 @@ const MainLayout = () => {
                 <Outlet />
             </main>
             <Footer />
+            <Chatbox />
         </div>
     )
 }
