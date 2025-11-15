@@ -7,8 +7,8 @@ const GallerySection = () => {
     const { medicalPackages } = useMedicalPackageService()
 
     return (
-        <section className="bg-ivory flex flex-col items-center px-5 py-[100px]">
-            <div className="max-w-container flex w-full flex-col gap-9 pt-[100px]">
+        <section className="bg-ivory flex flex-col items-center px-5 pb-6">
+            <div className="max-w-container flex w-full flex-col gap-9">
                 <div className="flex items-center justify-between">
                     <div className="flex max-w-[70%] flex-col gap-5">
                         <p className="text-secondary font-semibold tracking-widest uppercase">Vài dịch vụ nổi bật của chúng tôi</p>

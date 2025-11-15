@@ -3,6 +3,7 @@ import MainLayout from '@/layouts/MainLayout'
 import ErrorPage from '@/pages/ErrorPage'
 import HomePage from '@/pages/HomePage'
 import BookAppointmentsPage from '@/pages/BookAppointmentsPage'
+import EmailVerificationPage from '@/pages/EmailVerificationPage'
 
 const MainRoutes = [
     {
@@ -21,6 +22,10 @@ const MainRoutes = [
             {
                 path: '/book-appointment',
                 element: <BookAppointmentsPage />
+            },
+            {
+                path: '/email-verification',
+                element: <EmailVerificationPage />
             }
         ]
     }
