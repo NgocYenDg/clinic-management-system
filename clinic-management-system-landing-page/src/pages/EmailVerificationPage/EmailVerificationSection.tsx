@@ -20,16 +20,6 @@ const EmailVerificationSection = () => {
                         <div className="text-center">
                             <h3 className="mb-2 text-3xl font-bold text-green-800">Đang xác nhận email!</h3>
                         </div>
-                        <div className="flex w-full flex-col gap-3 rounded-lg bg-white/60 p-4 backdrop-blur-sm">
-                            <div className="flex items-center justify-between border-b border-green-200 pb-2">
-                                <span className="text-sm font-medium text-gray-600">Mã đặt lịch</span>
-                                <span className="font-mono text-sm font-semibold text-green-700">{code}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-600">Trạng thái</span>
-                                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Đang xác nhận</span>
-                            </div>
-                        </div>
                     </div>
                 )}
                 {emailVerification.isError && (
@@ -40,16 +30,6 @@ const EmailVerificationSection = () => {
                         <div className="text-center">
                             <h3 className="mb-2 text-3xl font-bold text-red-800">Xác nhận email thất bại!</h3>
                         </div>
-                        <div className="flex w-full flex-col gap-3 rounded-lg bg-white/60 p-4 backdrop-blur-sm">
-                            <div className="flex items-center justify-between border-b border-red-200 pb-2">
-                                <span className="text-sm font-medium text-gray-600">Mã đặt lịch</span>
-                                <span className="font-mono text-sm font-semibold text-red-700">{code}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-600">Trạng thái</span>
-                                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">Thất bại</span>
-                            </div>
-                        </div>
                     </div>
                 )}
                 {emailVerification.isSuccess && (
@@ -58,18 +38,8 @@ const EmailVerificationSection = () => {
                             <FontAwesomeIcon icon={faCheck} className="text-5xl text-white" />
                         </div>
                         <div className="text-center">
-                            <h3 className="mb-2 text-3xl font-bold text-green-800">Đặt lịch khám thành công!</h3>
+                            <h3 className="mb-2 text-3xl font-bold text-green-800">Xác thực email thành công!</h3>
                             <p className="text-lg text-green-700">Vui lòng kiểm tra email để kiểm tra thông tin lịch khám của bạn.</p>
-                        </div>
-                        <div className="flex w-full flex-col gap-3 rounded-lg bg-white/60 p-4 backdrop-blur-sm">
-                            <div className="flex items-center justify-between border-b border-green-200 pb-2">
-                                <span className="text-sm font-medium text-gray-600">Mã đặt lịch</span>
-                                <span className="font-mono text-sm font-semibold text-green-700">{code}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-gray-600">Trạng thái</span>
-                                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Đã xác nhận</span>
-                            </div>
                         </div>
                     </div>
                 )}
