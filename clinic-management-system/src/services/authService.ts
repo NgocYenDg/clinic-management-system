@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "./axios-instance";
+import { useNavigate } from "react-router-dom";
 
 const useAuthService = (params?: {
   verificationId?: string;
@@ -8,6 +9,9 @@ const useAuthService = (params?: {
   password?: string;
 }) => {
   const { verificationId, code, accountName, password } = params ?? {};
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const emailVerification = useQuery({
     queryKey: ["emailVerification", verificationId, code],
     queryFn: () => {
@@ -61,10 +65,22 @@ const useAuthService = (params?: {
     enabled: !!login.data?.token,
   });
 
+  const logout = () => {
+    // Clear tokens from localStorage
+    localStorage.removeItem("tokens");
+    
+    // Clear all queries from cache
+    queryClient.clear();
+    
+    // Navigate to login page
+    navigate("/login");
+  };
+
   return {
     emailVerification,
     login,
     account,
+    logout,
   };
 };
 

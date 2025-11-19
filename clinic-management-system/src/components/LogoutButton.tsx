@@ -1,12 +1,12 @@
-import { useAuth } from '../hooks/useAuth'
+import useAuthService from '../services/authService'
 import { FaArrowRightFromBracket } from 'react-icons/fa6'
 
 export default function LogoutButton() {
-  const { logout } = useAuth()
+  const { logout } = useAuthService()
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      await logout()
+      logout()
     } catch (error) {
       console.error('Logout error:', error)
     }
