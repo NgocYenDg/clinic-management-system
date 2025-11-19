@@ -1,0 +1,151 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { axiosInstance } from "./axios-instance";
+
+const useStaffService = ({
+  staffId,
+  departmentId,
+  staffsParams,
+  departmentsParams,
+  scheduleParams,
+}: {
+  staffId?: string;
+  departmentId?: string;
+  staffsParams?: GetAllStaffsParams;
+  departmentsParams?: GetAllDepartmentsParams;
+  scheduleParams?: GetStaffScheduleParams;
+}) => {
+  const queryClient = useQueryClient();
+
+  // Staff Mutations
+  const createStaff = useMutation({
+    mutationFn: (request: CreateStaffRequest) =>
+      axiosInstance.post<string>("/api/staff", request).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staffs"] });
+    },
+  });
+
+  const updateStaff = useMutation({
+    mutationFn: ({
+      staffId,
+      request,
+    }: {
+      staffId: string;
+      request: UpdateStaffRequest;
+    }) =>
+      axiosInstance
+        .put<void>(`/api/staff/${staffId}`, request)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staffs"] });
+      queryClient.invalidateQueries({ queryKey: ["staff"] });
+    },
+  });
+
+  const requestDayOff = useMutation({
+    mutationFn: ({
+      staffId,
+      request,
+    }: {
+      staffId: string;
+      request: RequestDayOffsRequest;
+    }) =>
+      axiosInstance
+        .post<void>(`/api/staff/${staffId}/day-off`, request)
+        .then((res) => res.data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["staff", variables.staffId] });
+      queryClient.invalidateQueries({ queryKey: ["staffSchedule"] });
+    },
+  });
+
+  const deleteStaff = useMutation({
+    mutationFn: (staffId: string) =>
+      axiosInstance
+        .delete<void>(`/api/staff/${staffId}`)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staffs"] });
+    },
+  });
+
+  // Department Mutations
+  const createDepartment = useMutation({
+    mutationFn: (request: CreateDepartmentRequest) =>
+      axiosInstance
+        .post<{ departmentId: string }>("/api/department", request)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+  });
+
+  // Staff Queries
+  const staffs = useQuery({
+    queryKey: ["staffs", staffsParams],
+    queryFn: () =>
+      axiosInstance
+        .get<Pagination<Staff>>("/api/staff", {
+          params: staffsParams,
+        })
+        .then((res) => res.data),
+    enabled: !!staffsParams,
+  });
+
+  const staff = useQuery({
+    queryKey: ["staff", staffId],
+    queryFn: () =>
+      axiosInstance.get<Staff>(`/api/staff/${staffId}`).then((res) => res.data),
+    enabled: !!staffId,
+  });
+
+  const staffSchedule = useQuery({
+    queryKey: ["staffSchedule", scheduleParams],
+    queryFn: () =>
+      axiosInstance
+        .get<Staff[]>("/api/staff/schedule", {
+          params: scheduleParams,
+        })
+        .then((res) => res.data),
+    enabled: !!scheduleParams?.month && !!scheduleParams?.year,
+  });
+
+  // Department Queries
+  const departments = useQuery({
+    queryKey: ["departments", departmentsParams],
+    queryFn: () =>
+      axiosInstance
+        .get<Pagination<Department>>("/api/department", {
+          params: departmentsParams,
+        })
+        .then((res) => res.data),
+    enabled: !!departmentsParams,
+  });
+
+  const department = useQuery({
+    queryKey: ["department", departmentId],
+    queryFn: () =>
+      axiosInstance
+        .get<Department>(`/api/department/${departmentId}`)
+        .then((res) => res.data),
+    enabled: !!departmentId,
+  });
+
+  return {
+    // Mutations
+    createStaff,
+    updateStaff,
+    requestDayOff,
+    deleteStaff,
+    createDepartment,
+
+    // Queries
+    staffs,
+    staff,
+    staffSchedule,
+    departments,
+    department,
+  };
+};
+
+export default useStaffService;

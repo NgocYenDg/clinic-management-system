@@ -1,17 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios-instance";
 
-const useAuthService = ({
-  verificationId,
-  code,
-  accountName,
-  password,
-}: {
+const useAuthService = (params?: {
   verificationId?: string;
   code?: string;
   accountName?: string;
   password?: string;
 }) => {
+  const { verificationId, code, accountName, password } = params ?? {};
   const emailVerification = useQuery({
     queryKey: ["emailVerification", verificationId, code],
     queryFn: () => {
