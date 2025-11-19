@@ -10,6 +10,10 @@ export default function ProtectedRoute({
 }) {
   const { account } = useAuthService({});
   const userRole = account.data?.role;
+  
+  if (account.isPending) {
+    account.refetch();
+  }
 
   if (account.isLoading) {
     return (
@@ -21,7 +25,7 @@ export default function ProtectedRoute({
       </div>
     );
   }
-
+  
   if (!account.data) {
     return <Navigate to="/login" replace />;
   }

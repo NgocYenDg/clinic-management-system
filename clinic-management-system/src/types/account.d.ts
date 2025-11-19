@@ -1,5 +1,5 @@
 declare global {
-  type Role = "ADMIN" | "DOCTOR" | "NURSE" | "RECEPTIONIST" | "USER";
+  type Role = "ADMIN" | "DOCTOR" | "MANAGER" | "RECEPTIONIST";
 
   interface IAccount {
     accountId: number;
