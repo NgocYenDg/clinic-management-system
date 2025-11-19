@@ -6,6 +6,7 @@ interface StaffFormModalProps {
   formData: CreateStaffRequest | UpdateStaffRequest;
   isSubmitting: boolean;
   showEmailField?: boolean;
+  departments?: Department[];
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
   onChange: (data: Partial<CreateStaffRequest | UpdateStaffRequest>) => void;
@@ -17,6 +18,7 @@ export default function StaffFormModal({
   formData,
   isSubmitting,
   showEmailField = true,
+  departments = [],
   onClose,
   onSubmit,
   onChange,
@@ -106,16 +108,24 @@ export default function StaffFormModal({
 
           <div>
             <label className="block text-sm font-medium mb-2">
-              Phòng ban ID{" "}
+              Phòng ban{" "}
               {!showEmailField && <span className="text-red-400">*</span>}
             </label>
-            <input
-              type="text"
+            <select
               required={!showEmailField}
               value={formData.departmentId}
               onChange={(e) => onChange({ departmentId: e.target.value })}
               className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            />
+            >
+              <option className="text-black" value="">
+                -- Chọn phòng ban --
+              </option>
+              {departments.map((dept) => (
+                <option key={dept.id} className="text-black" value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

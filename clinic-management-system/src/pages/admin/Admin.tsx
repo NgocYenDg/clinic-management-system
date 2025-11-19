@@ -404,6 +404,7 @@ export default function Admin() {
             formData={staffFormData}
             isSubmitting={createStaff.isPending}
             showEmailField={true}
+            departments={departments.data?.content || []}
             onClose={() => {
               setShowCreateModal(false);
               resetStaffForm();
@@ -418,6 +419,7 @@ export default function Admin() {
             formData={staffFormData}
             isSubmitting={updateStaff.isPending}
             showEmailField={false}
+            departments={departments.data?.content || []}
             onClose={() => {
               setShowEditModal(false);
               setSelectedStaff(null);
