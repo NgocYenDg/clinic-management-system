@@ -1,24 +1,42 @@
 import { useState } from "react";
-import { UserCog, Users, UserPlus, Building2 } from "lucide-react";
+import {
+  UserCog,
+  Users,
+  UserPlus,
+  Building2,
+  Package,
+  Stethoscope,
+} from "lucide-react";
 import LogoutButton from "../../components/LogoutButton";
 import StatsCard from "./components/StatsCard";
 import SearchFilter from "./components/SearchFilter";
 import StaffTable from "./components/StaffTable";
 import DepartmentTable from "../../components/admin/DepartmentTable";
+import MedicalPackageTable from "./components/MedicalPackageTable";
+import MedicalServiceTable from "./components/MedicalServiceTable";
+import MedicalPackageDetailView from "./components/MedicalPackageDetailView";
 import Pagination from "./components/Pagination";
 import StaffFormModal from "./components/StaffFormModal";
 import DepartmentFormModal from "../../components/admin/DepartmentFormModal";
+import MedicalPackageFormModal from "./components/MedicalPackageFormModal";
+import MedicalServiceFormModal from "./components/MedicalServiceFormModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import UserInfoCard from "./components/UserInfoCard";
 import useStaffService from "../../services/staffService";
+import useMedicalPackageService from "../../services/medicalPackageService";
 import useAuthService from "@/services/authService";
 
-type TabType = "staff" | "department";
+type TabType = "staff" | "department" | "medical-package" | "medical-service";
 
 export default function Admin() {
   const { account } = useAuthService();
   const [activeTab, setActiveTab] = useState<TabType>("staff");
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [staffSearchKeyword, setStaffSearchKeyword] = useState("");
+  const [departmentSearchKeyword, setDepartmentSearchKeyword] = useState("");
+  const [medicalPackageSearchKeyword, setMedicalPackageSearchKeyword] =
+    useState("");
+  const [medicalServiceSearchKeyword, setMedicalServiceSearchKeyword] =
+    useState("");
   const [selectedRole, setSelectedRole] = useState<number>();
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -27,6 +45,15 @@ export default function Admin() {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [selectedDepartment, setSelectedDepartment] =
     useState<Department | null>(null);
+  const [selectedMedicalPackage, setSelectedMedicalPackage] =
+    useState<IMedicalPackage | null>(null);
+  const [selectedMedicalService, setSelectedMedicalService] =
+    useState<MedicalServiceDTO | null>(null);
+  const [showMedicalPackageDetail, setShowMedicalPackageDetail] =
+    useState(false);
+  const [selectedMedicalPackageId, setSelectedMedicalPackageId] = useState<
+    string | undefined
+  >(undefined);
 
   // Fetch staffs with filters
   const {
@@ -40,16 +67,44 @@ export default function Admin() {
     staffsParams:
       activeTab === "staff"
         ? {
-            keyword: searchKeyword || undefined,
+            keyword: staffSearchKeyword || undefined,
             role: selectedRole,
             page: currentPage,
             sort: "ASC",
           }
-        : undefined,
+        : { page: 1, sort: "ASC" },
     departmentsParams:
       activeTab === "department"
-        ? { page: currentPage, keyword: searchKeyword || undefined }
+        ? { page: currentPage, keyword: departmentSearchKeyword || undefined }
+        : activeTab === "medical-service"
+        ? { page: 1, keyword: undefined }
         : { page: 1 },
+  });
+
+  // Fetch medical packages and services
+  const {
+    medicalPackages,
+    medicalPackage,
+    medicalServices,
+    createMedicalPackage,
+    createMedicalService,
+  } = useMedicalPackageService({
+    medicalPackagesParams:
+      activeTab === "medical-package"
+        ? {
+            page: currentPage,
+            keyword: medicalPackageSearchKeyword || undefined,
+            sort: "ASC",
+          }
+        : { page: 1, sort: "ASC" },
+    medicalServicesParams:
+      activeTab === "medical-service"
+        ? {
+            page: currentPage,
+            keyword: medicalServiceSearchKeyword || undefined,
+          }
+        : { page: 1 },
+    medicalPackageId: selectedMedicalPackageId,
   });
 
   // Form state for create/edit staff
@@ -69,6 +124,26 @@ export default function Admin() {
     useState<CreateDepartmentRequest>({
       name: "",
       description: "",
+    });
+
+  // Form state for create/edit medical package
+  const [medicalPackageFormData, setMedicalPackageFormData] =
+    useState<CreateMedicalPackageRequest>({
+      name: "",
+      description: "",
+      serviceIds: [],
+      price: 0,
+      image: "",
+    });
+
+  // Form state for create/edit medical service
+  const [medicalServiceFormData, setMedicalServiceFormData] =
+    useState<CreateMedicalServiceRequest>({
+      name: "",
+      description: "",
+      departmentId: "",
+      processingPriority: 1,
+      formTemplate: "",
     });
 
   // Staff handlers
@@ -170,6 +245,78 @@ export default function Admin() {
     });
   };
 
+  const resetMedicalPackageForm = () => {
+    setMedicalPackageFormData({
+      name: "",
+      description: "",
+      serviceIds: [],
+      price: 0,
+      image: "",
+    });
+  };
+
+  const resetMedicalServiceForm = () => {
+    setMedicalServiceFormData({
+      name: "",
+      description: "",
+      departmentId: "",
+      processingPriority: 1,
+      formTemplate: "",
+    });
+  };
+
+  // Medical Package handlers
+  const handleCreateMedicalPackage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createMedicalPackage.mutateAsync(medicalPackageFormData);
+      setShowCreateModal(false);
+      resetMedicalPackageForm();
+      medicalPackages.refetch();
+    } catch (error) {
+      console.error("Error creating medical package:", error);
+    }
+  };
+
+  const handleDeleteMedicalPackage = async () => {
+    if (!selectedMedicalPackage) return;
+
+    try {
+      // TODO: Add delete mutation when API is ready
+      setShowDeleteModal(false);
+      setSelectedMedicalPackage(null);
+      medicalPackages.refetch();
+    } catch (error) {
+      console.error("Error deleting medical package:", error);
+    }
+  };
+
+  // Medical Service handlers
+  const handleCreateMedicalService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createMedicalService.mutateAsync(medicalServiceFormData);
+      setShowCreateModal(false);
+      resetMedicalServiceForm();
+      medicalServices.refetch();
+    } catch (error) {
+      console.error("Error creating medical service:", error);
+    }
+  };
+
+  const handleDeleteMedicalService = async () => {
+    if (!selectedMedicalService) return;
+
+    try {
+      // TODO: Add delete mutation when API is ready
+      setShowDeleteModal(false);
+      setSelectedMedicalService(null);
+      medicalServices.refetch();
+    } catch (error) {
+      console.error("Error deleting medical service:", error);
+    }
+  };
+
   const openEditStaffModal = (staff: Staff) => {
     setSelectedStaff(staff);
     setStaffFormData({
@@ -204,6 +351,26 @@ export default function Admin() {
     setShowDeleteModal(true);
   };
 
+  const openDeleteMedicalPackageModal = (pkg: IMedicalPackage) => {
+    setSelectedMedicalPackage(pkg);
+    setShowDeleteModal(true);
+  };
+
+  const openMedicalPackageDetailView = (pkg: IMedicalPackage) => {
+    setSelectedMedicalPackageId(pkg.medicalPackageId);
+    setShowMedicalPackageDetail(true);
+  };
+
+  const closeMedicalPackageDetailView = () => {
+    setShowMedicalPackageDetail(false);
+    setSelectedMedicalPackageId(undefined);
+  };
+
+  const openDeleteMedicalServiceModal = (service: MedicalServiceDTO) => {
+    setSelectedMedicalService(service);
+    setShowDeleteModal(true);
+  };
+
   const handleStaffFormChange = (
     data: Partial<CreateStaffRequest | UpdateStaffRequest>
   ) => {
@@ -216,8 +383,20 @@ export default function Admin() {
     setDepartmentFormData((prev) => ({ ...prev, ...data }));
   };
 
+  const handleMedicalPackageFormChange = (
+    data: Partial<CreateMedicalPackageRequest>
+  ) => {
+    setMedicalPackageFormData((prev) => ({ ...prev, ...data }));
+  };
+
+  const handleMedicalServiceFormChange = (
+    data: Partial<CreateMedicalServiceRequest>
+  ) => {
+    setMedicalServiceFormData((prev) => ({ ...prev, ...data }));
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
       {/* Header */}
       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -241,7 +420,7 @@ export default function Admin() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatsCard
             icon={Users}
             iconColor="text-blue-400"
@@ -257,6 +436,22 @@ export default function Admin() {
             value={departments.data?.total || 0}
             subtitle="Phòng ban hoạt động"
           />
+
+          <StatsCard
+            icon={Package}
+            iconColor="text-purple-400"
+            title="Tổng số gói khám"
+            value={medicalPackages.data?.total || 0}
+            subtitle="Gói khám có sẵn"
+          />
+
+          <StatsCard
+            icon={Stethoscope}
+            iconColor="text-orange-400"
+            title="Tổng số dịch vụ"
+            value={medicalServices.data?.total || 0}
+            subtitle="Dịch vụ y tế"
+          />
         </div>
 
         {/* Tabs with Add Button */}
@@ -265,8 +460,6 @@ export default function Admin() {
             <button
               onClick={() => {
                 setActiveTab("staff");
-                setSearchKeyword("");
-                setSelectedRole(undefined);
                 setCurrentPage(1);
               }}
               className={`px-6 py-3 rounded-lg font-semibold transition-all ${
@@ -283,7 +476,6 @@ export default function Admin() {
             <button
               onClick={() => {
                 setActiveTab("department");
-                setSearchKeyword("");
                 setCurrentPage(1);
               }}
               className={`px-6 py-3 rounded-lg font-semibold transition-all ${
@@ -297,6 +489,38 @@ export default function Admin() {
                 <span>Phòng ban</span>
               </div>
             </button>
+            <button
+              onClick={() => {
+                setActiveTab("medical-package");
+                setCurrentPage(1);
+              }}
+              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                activeTab === "medical-package"
+                  ? "bg-purple-500 text-white"
+                  : "bg-white/5 text-slate-400 hover:bg-white/10"
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Package className="w-5 h-5" />
+                <span>Gói khám</span>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("medical-service");
+                setCurrentPage(1);
+              }}
+              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                activeTab === "medical-service"
+                  ? "bg-orange-500 text-white"
+                  : "bg-white/5 text-slate-400 hover:bg-white/10"
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Stethoscope className="w-5 h-5" />
+                <span>Dịch vụ</span>
+              </div>
+            </button>
           </div>
 
           {/* Add Button */}
@@ -306,7 +530,13 @@ export default function Admin() {
           >
             <UserPlus className="w-5 h-5" />
             <span>
-              {activeTab === "staff" ? "Thêm nhân viên" : "Thêm phòng ban"}
+              {activeTab === "staff"
+                ? "Thêm nhân viên"
+                : activeTab === "department"
+                ? "Thêm phòng ban"
+                : activeTab === "medical-package"
+                ? "Thêm gói khám"
+                : "Thêm dịch vụ"}
             </span>
           </button>
         </div>
@@ -314,12 +544,12 @@ export default function Admin() {
         {/* Search and Filter - Only show for staff tab */}
         {activeTab === "staff" && (
           <SearchFilter
-            searchKeyword={searchKeyword}
+            searchKeyword={staffSearchKeyword}
             selectedRole={selectedRole}
-            onSearchChange={setSearchKeyword}
+            onSearchChange={setStaffSearchKeyword}
             onRoleChange={setSelectedRole}
             onClearFilters={() => {
-              setSearchKeyword("");
+              setStaffSearchKeyword("");
               setSelectedRole(undefined);
               setCurrentPage(1);
             }}
@@ -334,13 +564,63 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Tìm kiếm theo tên phòng ban..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+                value={departmentSearchKeyword}
+                onChange={(e) => setDepartmentSearchKeyword(e.target.value)}
                 className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
               <button
                 onClick={() => {
-                  setSearchKeyword("");
+                  setDepartmentSearchKeyword("");
+                  setCurrentPage(1);
+                }}
+                className="px-6 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Search for Medical Package */}
+        {activeTab === "medical-package" && (
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6">
+            <h2 className="text-xl font-bold mb-4">Tìm kiếm gói khám</h2>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên gói khám..."
+                value={medicalPackageSearchKeyword}
+                onChange={(e) => setMedicalPackageSearchKeyword(e.target.value)}
+                className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+              <button
+                onClick={() => {
+                  setMedicalPackageSearchKeyword("");
+                  setCurrentPage(1);
+                }}
+                className="px-6 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Search for Medical Service */}
+        {activeTab === "medical-service" && (
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl mb-6">
+            <h2 className="text-xl font-bold mb-4">Tìm kiếm dịch vụ</h2>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên dịch vụ..."
+                value={medicalServiceSearchKeyword}
+                onChange={(e) => setMedicalServiceSearchKeyword(e.target.value)}
+                className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+              <button
+                onClick={() => {
+                  setMedicalServiceSearchKeyword("");
                   setCurrentPage(1);
                 }}
                 className="px-6 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
@@ -356,7 +636,11 @@ export default function Admin() {
           <h2 className="text-xl font-bold mb-4">
             {activeTab === "staff"
               ? "Danh sách nhân viên"
-              : "Danh sách phòng ban"}
+              : activeTab === "department"
+              ? "Danh sách phòng ban"
+              : activeTab === "medical-package"
+              ? "Danh sách gói khám"
+              : "Danh sách dịch vụ"}
           </h2>
 
           {activeTab === "staff" ? (
@@ -372,7 +656,7 @@ export default function Admin() {
                 onPageChange={setCurrentPage}
               />
             </>
-          ) : (
+          ) : activeTab === "department" ? (
             <>
               <DepartmentTable
                 departmentsQuery={departments}
@@ -382,6 +666,48 @@ export default function Admin() {
               <Pagination
                 currentPage={currentPage}
                 totalPages={departments.data?.totalPages || 1}
+                onPageChange={setCurrentPage}
+              />
+            </>
+          ) : activeTab === "medical-package" ? (
+            <>
+              {showMedicalPackageDetail && medicalPackage.data ? (
+                <MedicalPackageDetailView
+                  packageData={medicalPackage.data}
+                  onBack={closeMedicalPackageDetailView}
+                />
+              ) : (
+                <>
+                  <MedicalPackageTable
+                    packages={medicalPackages.data?.content || []}
+                    onEdit={(pkg) => {
+                      // TODO: Implement edit functionality
+                      console.log("Edit medical package:", pkg);
+                    }}
+                    onDelete={openDeleteMedicalPackageModal}
+                    onViewDetail={openMedicalPackageDetailView}
+                  />
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={medicalPackages.data?.totalPages || 1}
+                    onPageChange={setCurrentPage}
+                  />
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <MedicalServiceTable
+                services={medicalServices.data?.content || []}
+                onEdit={(service) => {
+                  // TODO: Implement edit functionality
+                  console.log("Edit medical service:", service);
+                }}
+                onDelete={openDeleteMedicalServiceModal}
+              />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={medicalServices.data?.totalPages || 1}
                 onPageChange={setCurrentPage}
               />
             </>
@@ -486,6 +812,66 @@ export default function Admin() {
             onCancel={() => {
               setShowDeleteModal(false);
               setSelectedDepartment(null);
+            }}
+          />
+        </>
+      )}
+
+      {/* Modals for Medical Package */}
+      {activeTab === "medical-package" && (
+        <>
+          <MedicalPackageFormModal
+            isOpen={showCreateModal}
+            title="Tạo gói khám mới"
+            formData={medicalPackageFormData}
+            isSubmitting={createMedicalPackage.isPending}
+            services={medicalServices.data?.content || []}
+            onClose={() => {
+              setShowCreateModal(false);
+              resetMedicalPackageForm();
+            }}
+            onSubmit={handleCreateMedicalPackage}
+            onChange={handleMedicalPackageFormChange}
+          />
+
+          <DeleteConfirmModal
+            isOpen={showDeleteModal && !!selectedMedicalPackage}
+            staffName={selectedMedicalPackage?.name || ""}
+            isDeleting={false}
+            onConfirm={handleDeleteMedicalPackage}
+            onCancel={() => {
+              setShowDeleteModal(false);
+              setSelectedMedicalPackage(null);
+            }}
+          />
+        </>
+      )}
+
+      {/* Modals for Medical Service */}
+      {activeTab === "medical-service" && (
+        <>
+          <MedicalServiceFormModal
+            isOpen={showCreateModal}
+            title="Tạo dịch vụ mới"
+            formData={medicalServiceFormData}
+            isSubmitting={createMedicalService.isPending}
+            departments={departments.data?.content || []}
+            onClose={() => {
+              setShowCreateModal(false);
+              resetMedicalServiceForm();
+            }}
+            onSubmit={handleCreateMedicalService}
+            onChange={handleMedicalServiceFormChange}
+          />
+
+          <DeleteConfirmModal
+            isOpen={showDeleteModal && !!selectedMedicalService}
+            staffName={selectedMedicalService?.name || ""}
+            isDeleting={false}
+            onConfirm={handleDeleteMedicalService}
+            onCancel={() => {
+              setShowDeleteModal(false);
+              setSelectedMedicalService(null);
             }}
           />
         </>

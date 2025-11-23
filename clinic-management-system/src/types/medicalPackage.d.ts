@@ -1,11 +1,58 @@
 declare global {
-    interface IMedicalPackage {
-        medicalPackageId: string
-        name: string
-        description: string
-        price: number
-        image: string
-    }
+  interface IMedicalPackage {
+    medicalPackageId: string;
+    name: string;
+    description: string;
+    price: number;
+    image: string;
+  }
+
+  // Request types
+  interface CreateMedicalPackageRequest {
+    name: string;
+    description: string;
+    serviceIds: string[];
+    price: number;
+    image: string;
+  }
+
+  interface CreateMedicalServiceRequest {
+    name: string;
+    description: string;
+    departmentId: string;
+    processingPriority: number;
+    formTemplate: string;
+  }
+
+  interface MedicalServiceDTO {
+    medicalServiceId: string;
+    name: string;
+    processingPriority: number;
+    description: string;
+    departmentId: string;
+    departmentName: string;
+    formTemplate: string;
+  }
+
+  interface MedicalPackageDetailDTO {
+    medicalPackageId: string;
+    name: string;
+    description: string;
+    price: number;
+    medicalServices: MedicalServiceDTO[];
+    image: string;
+  }
+
+  interface GetMedicalPackagesParams {
+    page?: number;
+    keyword?: string;
+    sort?: "ASC" | "DESC";
+  }
+
+  interface GetMedicalServicesParams {
+    page?: number;
+    keyword?: string;
+  }
 }
 
-export {}
+export {};

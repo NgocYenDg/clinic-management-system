@@ -9,6 +9,7 @@ declare global {
     role: number;
     eSignature: string;
     departmentId: string;
+    departmentName: string;
   }
 
   interface Department {

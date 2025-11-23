@@ -116,7 +116,7 @@ export default function StaffTable({
                 {staff.phone || "N/A"}
               </td>
               <td className="py-4 px-4 text-slate-300">
-                {staff.departmentId || "N/A"}
+                {staff.departmentName || "N/A"}
               </td>
               <td className="py-4 px-4">
                 <div className="flex items-center justify-end space-x-2">
