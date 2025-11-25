@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import { useState } from "react";
 import useBookingService from "@/services/bookingService";
 
@@ -12,8 +12,14 @@ export default function MedicalPackageDetailView({
   onBack,
 }: MedicalPackageDetailViewProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [showCreateSlotModal, setShowCreateSlotModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [slotFormData, setSlotFormData] = useState({
+    shift: 0 as Shift,
+    maxQuantity: 10,
+  });
 
-  const { slots } = useBookingService({
+  const { slots, createSlot } = useBookingService({
     medicalPackageId: packageData.medicalPackageId,
   });
 
@@ -59,6 +65,40 @@ export default function MedicalPackageDetailView({
       currentMonth.getMonth() === today.getMonth() &&
       currentMonth.getFullYear() === today.getFullYear()
     );
+  };
+
+  const isAfterToday = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date > today;
+  };
+
+  const handleDateClick = (date: Date) => {
+    if (isAfterToday(date)) {
+      setSelectedDate(date);
+      setShowCreateSlotModal(true);
+    }
+  };
+
+  const handleCreateSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedDate) return;
+
+    try {
+      await createSlot.mutateAsync({
+        date: formatDate(selectedDate),
+        shift: slotFormData.shift,
+        medicalPackageId: packageData.medicalPackageId,
+        maxQuantity: slotFormData.maxQuantity,
+      });
+      setShowCreateSlotModal(false);
+      setSlotFormData({ shift: 0, maxQuantity: 10 });
+      setSelectedDate(null);
+      slots.refetch();
+    } catch (error) {
+      console.error("Error creating slot:", error);
+    }
   };
 
   const monthNames = [
@@ -157,7 +197,7 @@ export default function MedicalPackageDetailView({
       {/* Calendar view for slots */}
       <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
         <h3 className="text-xl font-semibold text-white mb-4">
-          Lịch khám có sẵn
+          Gói khám đã tạo
         </h3>
 
         {/* Calendar navigation */}
@@ -207,32 +247,40 @@ export default function MedicalPackageDetailView({
             const daySlots = getSlotsForDate(date);
             const hasSlots = daySlots.length > 0;
             const today = isToday(day);
+            const canCreate = isAfterToday(date);
 
             return (
               <div
                 key={day}
+                onClick={() => handleDateClick(date)}
                 className={`aspect-square p-2 rounded-lg border transition-colors ${
                   today
                     ? "border-blue-400 bg-blue-500/20"
                     : "border-white/10 bg-white/5"
-                }`}
+                } ${canCreate ? "hover:bg-white/10 cursor-pointer" : ""}`}
               >
-                <div className="text-center">
+                <div className="text-center h-full">
                   <div className={`text-sm ${today ? "font-bold" : ""}`}>
                     {day}
                   </div>
-                  {hasSlots && (
-                    <div className="mt-1 space-y-1">
+                  {hasSlots ? (
+                    <div className="mt-1 flex flex-col gap-2">
                       {daySlots.map((slot) => (
                         <div
                           key={slot.slotId}
-                          className="text-xs bg-green-500/20 text-green-400 rounded px-1 py-0.5"
+                          className="text-xs bg-green-500/20 text-green-400 rounded px-1 py-0.5 flex-1"
                         >
                           {slot.shift === 0 ? "Sáng" : "Chiều"} (
                           {slot.remainingQuantity}/{slot.maxQuantity})
                         </div>
                       ))}
                     </div>
+                  ) : (
+                    canCreate && (
+                      <div className="mt-1">
+                        <Plus className="w-4 h-4 mx-auto text-gray-400" />
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -248,12 +296,103 @@ export default function MedicalPackageDetailView({
         )}
 
         {/* No slots message */}
-        {!slots.isLoading && (!slots.data?.content || slots.data.content.length === 0) && (
-          <div className="text-center py-4 text-gray-400">
-            Chưa có lịch khám nào được tạo
-          </div>
-        )}
+        {!slots.isLoading &&
+          (!slots.data?.content || slots.data.content.length === 0) && (
+            <div className="text-center py-4 text-gray-400">
+              Chưa có lịch khám nào được tạo. Click vào ngày sau hôm nay để tạo
+              slot.
+            </div>
+          )}
       </div>
+
+      {/* Create Slot Modal */}
+      {showCreateSlotModal && selectedDate && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4 border border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-white">
+                Tạo slot khám - {formatDate(selectedDate)}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowCreateSlotModal(false);
+                  setSelectedDate(null);
+                  setSlotFormData({ shift: 0, maxQuantity: 10 });
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSlot} className="space-y-4">
+              {/* Shift selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Ca khám
+                </label>
+                <select
+                  value={slotFormData.shift}
+                  onChange={(e) =>
+                    setSlotFormData({
+                      ...slotFormData,
+                      shift: parseInt(e.target.value) as Shift,
+                    })
+                  }
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                >
+                  <option value={0}>Sáng</option>
+                  <option value={1}>Chiều</option>
+                </select>
+              </div>
+
+              {/* Max quantity */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Số lượng tối đa
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={slotFormData.maxQuantity}
+                  onChange={(e) =>
+                    setSlotFormData({
+                      ...slotFormData,
+                      maxQuantity: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateSlotModal(false);
+                    setSelectedDate(null);
+                    setSlotFormData({ shift: 0, maxQuantity: 10 });
+                  }}
+                  className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={createSlot.isPending}
+                  className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {createSlot.isPending ? "Đang tạo..." : "Tạo slot"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

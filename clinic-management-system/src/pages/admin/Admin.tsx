@@ -117,6 +117,8 @@ export default function Admin() {
     role: 0,
     eSignature: "",
     departmentId: "",
+    accountName: "",
+    password: "",
   });
 
   // Form state for create/edit department
@@ -235,6 +237,8 @@ export default function Admin() {
       role: 0,
       eSignature: "",
       departmentId: "",
+      accountName: "",
+      password: "",
     });
   };
 

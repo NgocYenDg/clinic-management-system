@@ -27,6 +27,8 @@ declare global {
     role: number;
     eSignature?: string;
     departmentId?: string;
+    accountName: string;
+    password: string;
   }
 
   interface UpdateStaffRequest {

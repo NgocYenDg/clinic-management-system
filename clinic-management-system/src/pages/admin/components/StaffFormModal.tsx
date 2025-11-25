@@ -67,6 +67,40 @@ export default function StaffFormModal({
             </div>
           )}
 
+          {showEmailField && "accountName" in formData && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Tên tài khoản <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  minLength={3}
+                  maxLength={50}
+                  value={formData.accountName}
+                  onChange={(e) => onChange({ accountName: e.target.value })}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  placeholder="Tối thiểu 3 ký tự"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Mật khẩu <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={formData.password}
+                  onChange={(e) => onChange({ password: e.target.value })}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  placeholder="Tối thiểu 6 ký tự"
+                />
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
