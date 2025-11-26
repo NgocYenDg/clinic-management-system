@@ -332,6 +332,8 @@ export default function Admin() {
       role: staff.role,
       eSignature: staff.eSignature,
       departmentId: staff.departmentId,
+      accountName: account.data?.accountName || "",
+      password: "",
     });
     setShowEditModal(true);
   };
@@ -680,6 +682,10 @@ export default function Admin() {
                   packageData={medicalPackage.data}
                   onBack={closeMedicalPackageDetailView}
                 />
+              ) : medicalPackages.isLoading || medicalPackages.isRefetching ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+                </div>
               ) : (
                 <>
                   <MedicalPackageTable
@@ -701,19 +707,27 @@ export default function Admin() {
             </>
           ) : (
             <>
-              <MedicalServiceTable
-                services={medicalServices.data?.content || []}
-                onEdit={(service) => {
-                  // TODO: Implement edit functionality
-                  console.log("Edit medical service:", service);
-                }}
-                onDelete={openDeleteMedicalServiceModal}
-              />
-              <Pagination
-                currentPage={currentPage}
-                totalPages={medicalServices.data?.totalPages || 1}
-                onPageChange={setCurrentPage}
-              />
+              {medicalServices.isLoading || medicalServices.isRefetching ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+                </div>
+              ) : (
+                <>
+                  <MedicalServiceTable
+                    services={medicalServices.data?.content || []}
+                    onEdit={(service) => {
+                      // TODO: Implement edit functionality
+                      console.log("Edit medical service:", service);
+                    }}
+                    onDelete={openDeleteMedicalServiceModal}
+                  />
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={medicalServices.data?.totalPages || 1}
+                    onPageChange={setCurrentPage}
+                  />
+                </>
+              )}
             </>
           )}
         </div>
