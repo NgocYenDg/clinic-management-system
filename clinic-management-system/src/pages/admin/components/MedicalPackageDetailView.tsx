@@ -1,6 +1,7 @@
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { useState } from "react";
 import useBookingService from "@/services/bookingService";
+import { isEqual, isSameDay } from "date-fns";
 
 interface MedicalPackageDetailViewProps {
   packageData: MedicalPackageDetailDTO;
@@ -50,12 +51,13 @@ export default function MedicalPackageDetailView({
   };
 
   const formatDate = (date: Date) => {
-    return date.toISOString().split("T")[0];
+    return date.toLocaleDateString("vi-VN");
   };
 
   const getSlotsForDate = (date: Date) => {
-    const dateStr = formatDate(date);
-    return slots.data?.content?.filter((slot) => slot.date === dateStr) || [];
+    return (
+      slots.data?.content?.filter((slot) => isSameDay(slot.date, date)) || []
+    );
   };
 
   const isToday = (day: number) => {

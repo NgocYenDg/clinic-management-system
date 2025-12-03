@@ -365,8 +365,7 @@ export default function Doctor() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Quick Stats */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link
             to="/doctor/appointments"
             className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer"
@@ -469,10 +468,10 @@ export default function Doctor() {
               Nhấn để quản lý đơn thuốc →
             </p>
           </Link>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Các thao tác nhanh</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link
@@ -520,7 +519,7 @@ export default function Doctor() {
               </div>
             </Link>
 
-            {/* <Link to="/doctor/prescriptions/medicines" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+            <Link to="/doctor/prescriptions/medicines" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
               <div className="flex items-center space-x-3">
                 <FaPills className="w-5 h-5 text-yellow-400" />
                 <div>
@@ -528,7 +527,7 @@ export default function Doctor() {
                   <p className="text-sm text-slate-400">Thêm/sửa đổi kho thuốc</p>
                 </div>
               </div>
-            </Link> */}
+            </Link>
 
             <Link
               to="/doctor/tokens"
@@ -545,7 +544,7 @@ export default function Doctor() {
               </div>
             </Link>
           </div>
-        </div>
+        </div> */}
 
         {/* User Info Card */}
         <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
