@@ -210,11 +210,11 @@ export default function Appointments() {
                 }
                 className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 appearance-none cursor-pointer"
               >
-                <option value="ALL">Tất cả</option>
-                <option value="CREATED">Đã tạo</option>
-                <option value="SHOWED">Đã đến</option>
-                <option value="CANCELED">Đã hủy</option>
-                <option value="NO_SHOWED">Không đến</option>
+                <option className="text-black" value="ALL">Tất cả</option>
+                <option className="text-black" value="CREATED">Đã tạo</option>
+                <option className="text-black" value="SHOWED">Đã đến</option>
+                <option className="text-black" value="CANCELED">Đã hủy</option>
+                <option className="text-black" value="NO_SHOWED">Không đến</option>
               </select>
             </div>
 
