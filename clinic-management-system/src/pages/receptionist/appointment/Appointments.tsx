@@ -1,14 +1,12 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../hooks/useAuth'
-import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import LogoutButton from '../../../components/LogoutButton'
-import { 
-  Bell, 
-  Plus, 
-  Edit, 
-  Calendar, 
-  X, 
+import { use, useState } from "react";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import LogoutButton from "../../../components/LogoutButton";
+import {
+  Plus,
+  Edit,
+  Calendar,
+  X,
   Search,
   Filter,
   UserCheck,
@@ -17,707 +15,660 @@ import {
   Clock,
   Check,
   AlertTriangle,
-  ArrowLeft
-} from 'lucide-react'
-import { collection, addDoc, updateDoc, doc, onSnapshot, query, orderBy, where } from 'firebase/firestore'
-import { db } from '../../../firebase/config'
+  Trash2,
+  Eye,
+} from "lucide-react";
+import useAuthService from "@/services/authService";
+import useBookingService from "@/services/bookingService";
+import { useExaminationFlowService } from "@/services/examinationFlowService";
+
+type AppointmentFilterStatus = "ALL" | AppointmentState;
 
 export default function Appointments() {
-  const { currentUser } = useAuth()
-  const [appointments, setAppointments] = useState([])
-  const [doctors, setDoctors] = useState([])
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [selectedAppointment, setSelectedAppointment] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [loading, setLoading] = useState(false)
+  const { account } = useAuthService();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filterStatus, setFilterStatus] =
+    useState<AppointmentFilterStatus>("ALL");
+  const [filterDateFrom, setFilterDateFrom] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [filterDateTo, setFilterDateTo] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<IAppointment | null>(null);
 
-  // Form states for create/edit
-  const [formData, setFormData] = useState({
-    patientName: '',
-    patientPhone: '',
-    patientEmail: '',
-    patientAge: '',
-    patientGender: '',
-    doctorName: '',
-    appointmentDate: '',
-    appointmentTime: '',
-    appointmentType: 'consultation',
-    notes: '',
-    status: 'scheduled',
-    symptoms: '',
-    medicalHistory: '',
-    medications: '',
-    vitalSigns: {
-      bloodPressure: '',
-      heartRate: '',
-      temperature: '',
-      weight: ''
-    }
-  })
+  // Fetch appointments with filters
+  const {
+    appointments,
+    createAppointment,
+    updateAppointmentState,
+    deleteAppointment,
+    appointment,
+  } = useBookingService({
+    appointmentsParams: {
+      page: currentPage,
+      keyword: searchKeyword || undefined,
+      state: filterStatus !== "ALL" ? filterStatus : undefined,
+      dateFrom: filterDateFrom || undefined,
+      dateTo: filterDateTo || undefined,
+      sort: "DESC",
+    },
+    appointmentId: selectedAppointment?.id,
+  });
 
-  // Fetch real data from Firebase
-  useEffect(() => {
-    // Fetch appointments
-    const appointmentsRef = collection(db, 'appointments')
-    const q = query(appointmentsRef, orderBy('createdAt', 'desc'))
-    
-    const unsubscribeAppointments = onSnapshot(q, (snapshot) => {
-      const appointmentsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      setAppointments(appointmentsData)
-    }, (error) => {
-      console.error('Error fetching appointments:', error)
-    })
+  const { createMedicalForm } = useExaminationFlowService();
 
-    // Fetch doctors from staffData collection
-    const doctorsRef = collection(db, 'staffData')
-    const doctorsQuery = query(doctorsRef, where('role', '==', 'doctor'))
-    
-    const unsubscribeDoctors = onSnapshot(doctorsQuery, (snapshot) => {
-      const doctorsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      setDoctors(doctorsData)
-    }, (error) => {
-      console.error('Error fetching doctors:', error)
-    })
+  // Form state
+  const [formData, setFormData] = useState<ICreateAppointmentRequest>({
+    patientId: "",
+    slotId: "",
+  });
 
-    return () => {
-      unsubscribeAppointments()
-      unsubscribeDoctors()
-    }
-  }, [])
-
-  const handleCreateAppointment = () => {
-    setFormData({
-      patientName: '',
-      patientPhone: '',
-      patientEmail: '',
-      patientAge: '',
-      patientGender: '',
-      doctorName: '',
-      appointmentDate: getMinDate(), // Set to today's date
-      appointmentTime: '',
-      appointmentType: 'consultation',
-      notes: '',
-      status: 'scheduled',
-      symptoms: '',
-      medicalHistory: '',
-      medications: '',
-      vitalSigns: {
-        bloodPressure: '',
-        heartRate: '',
-        temperature: '',
-        weight: ''
-      }
-    })
-    setShowCreateModal(true)
-  }
-
-  const handleEditAppointment = (appointment) => {
-    setSelectedAppointment(appointment)
-    setFormData({
-      patientName: appointment.patientName || '',
-      patientPhone: appointment.patientPhone || '',
-      patientEmail: appointment.patientEmail || '',
-      patientAge: appointment.patientAge || '',
-      patientGender: appointment.patientGender || '',
-      doctorName: appointment.doctorName || '',
-      appointmentDate: appointment.appointmentDate || '',
-      appointmentTime: appointment.appointmentTime || '',
-      appointmentType: appointment.appointmentType || 'consultation',
-      notes: appointment.notes || '',
-      status: appointment.status || 'scheduled',
-      symptoms: appointment.symptoms || '',
-      medicalHistory: appointment.medicalHistory || '',
-      medications: appointment.medications || '',
-      vitalSigns: appointment.vitalSigns || {
-        bloodPressure: '',
-        heartRate: '',
-        temperature: '',
-        weight: ''
-      }
-    })
-    setShowEditModal(true)
-  }
-
-  const validateForm = () => {
-    if (!formData.patientName.trim()) {
-      toast.error('Please enter patient name')
-      return false
-    }
-    if (!formData.patientPhone.trim()) {
-      toast.error('Please enter patient phone')
-      return false
-    }
-    if (!formData.patientEmail.trim()) {
-      toast.error('Please enter patient email')
-      return false
-    }
-    if (!formData.doctorName.trim()) {
-      toast.error('Please select a doctor')
-      return false
-    }
-    if (!formData.appointmentDate) {
-      toast.error('Please select appointment date')
-      return false
-    }
-    if (!formData.appointmentTime) {
-      toast.error('Please select appointment time')
-      return false
-    }
-    return true
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!validateForm()) {
-      return
-    }
-    
-    setLoading(true)
-    
+  const handleCreateAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      if (showEditModal) {
-        // Update existing appointment in Firestore
-        const appointmentRef = doc(db, 'appointments', selectedAppointment.id)
-        await updateDoc(appointmentRef, {
-          ...formData,
-          updatedAt: new Date().toISOString()
-        })
-        toast.success('Appointment updated successfully!')
-        setShowEditModal(false)
-      } else {
-        // Create new appointment in Firestore
-        const appointmentData = {
-          ...formData,
-          createdAt: new Date().toISOString(),
-          createdBy: currentUser?.uid || 'receptionist',
-          status: 'scheduled' // Ensure status is set to scheduled
-        }
-        
-        await addDoc(collection(db, 'appointments'), appointmentData)
-        toast.success('Appointment created successfully!')
-        setShowCreateModal(false)
-      }
-    } catch (error) {
-      console.error('Error saving appointment:', error)
-      toast.error(`Error saving appointment: ${error.message}`)
-    } finally {
-      setLoading(false)
+      await createAppointment.mutateAsync(formData);
+      toast.success("Tạo lịch hẹn thành công");
+      setShowCreateModal(false);
+      resetForm();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Lỗi khi tạo lịch hẹn");
     }
-  }
+  };
 
-  const handleCancelAppointment = async (appointmentId) => {
+  const handleUpdateState = async (
+    appointmentId: string,
+    newState: AppointmentState
+  ) => {
     try {
-      const appointmentRef = doc(db, 'appointments', appointmentId)
-      await updateDoc(appointmentRef, {
-        status: 'cancelled',
-        updatedAt: new Date().toISOString()
-      })
-      toast.success('Appointment cancelled successfully!')
-    } catch (error) {
-      console.error('Error cancelling appointment:', error)
-      toast.error(`Error cancelling appointment: ${error.message}`)
+      await updateAppointmentState.mutateAsync({
+        appointmentId,
+        state: newState,
+      });
+      if (newState === "SHOWED" && appointment.data) {
+        await createMedicalForm.mutateAsync({
+          patientId: appointment.data.patientId,
+          medicalPackageIds: [appointment.data.medicalPackageId],
+        });
+      }
+      await toast.success("Cập nhật trạng thái thành công");
+      setShowEditModal(false);
+      setSelectedAppointment(null);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Lỗi khi cập nhật trạng thái"
+      );
     }
-  }
+  };
 
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa lịch hẹn này?")) return;
 
-
-  const handleRescheduleAppointment = (appointmentId) => {
-    const appointment = appointments.find(apt => apt.id === appointmentId)
-    handleEditAppointment(appointment)
-    toast.success('Appointment opened for rescheduling!')
-  }
-
-
-
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesFilter = filterStatus === 'all' || appointment.status === filterStatus
-    return matchesSearch && matchesFilter
-  })
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'scheduled': return 'text-blue-400 bg-blue-400/10'
-      case 'completed': return 'text-green-400 bg-green-400/10'
-      case 'cancelled': return 'text-red-400 bg-red-400/10'
-      case 'rescheduled': return 'text-yellow-400 bg-yellow-400/10'
-      default: return 'text-gray-400 bg-gray-400/10'
+    try {
+      await deleteAppointment.mutateAsync(appointmentId);
+      toast.success("Xóa lịch hẹn thành công");
+      setSelectedAppointment(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Lỗi khi xóa lịch hẹn");
     }
-  }
+  };
 
-       // Generate time slots from 11:00 AM to 6:00 PM
-  const generateTimeSlots = () => {
-    const slots = []
-    for (let hour = 11; hour <= 18; hour++) {
-      const time = `${hour.toString().padStart(2, '0')}:00`
-      const displayTime = hour <= 12 ? `${hour}:00 AM` : `${hour - 12}:00 PM`
-      slots.push({ value: time, label: displayTime })
+  const resetForm = () => {
+    setFormData({
+      patientId: "",
+      slotId: "",
+    });
+  };
+
+  const getStatusColor = (state: AppointmentState) => {
+    switch (state) {
+      case "CREATED":
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      case "SHOWED":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "CANCELED":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "NO_SHOWED":
+        return "bg-orange-500/20 text-orange-400 border-orange-500/30";
+      default:
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30";
     }
-    return slots
-  }
+  };
 
-  // Get minimum and maximum dates (current date to 7 days from now)
-  const getMinDate = () => {
-    const today = new Date()
-    return today.toISOString().split('T')[0]
-  }
-
-  const getMaxDate = () => {
-    const maxDate = new Date()
-    maxDate.setDate(maxDate.getDate() + 7)
-    return maxDate.toISOString().split('T')[0]
-  }
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'scheduled': return <Clock className="w-4 h-4" />
-      case 'completed': return <Check className="w-4 h-4" />
-      case 'cancelled': return <X className="w-4 h-4" />
-      case 'rescheduled': return <Calendar className="w-4 h-4" />
-      default: return <AlertTriangle className="w-4 h-4" />
+  const getStatusLabel = (state: AppointmentState) => {
+    switch (state) {
+      case "CREATED":
+        return "Đã tạo";
+      case "SHOWED":
+        return "Đã đến";
+      case "CANCELED":
+        return "Đã hủy";
+      case "NO_SHOWED":
+        return "Không đến";
+      default:
+        return state;
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
-             {/* Header */}
-       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
-         <div className="max-w-7xl mx-auto flex justify-between items-center">
-           <div className="flex items-center space-x-3">
-             <Link 
-               to="/receptionist"
-               className="flex items-center space-x-2 px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors"
-             >
-               <ArrowLeft className="w-4 h-4" />
-               <span className="text-sm font-medium">Quay về bảng điều khiển</span>
-             </Link>
-             <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
-               <Bell className="w-6 h-6 text-cyan-400" />
-             </div>
-             <div>
-               <h1 className="text-xl font-bold">Appointment Management</h1>
-               <p className="text-sm text-slate-400">Welcome, {currentUser?.displayName || 'Receptionist'}</p>
-             </div>
-           </div>
-           <LogoutButton />
-         </div>
-       </header>
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+      {/* Header */}
+      <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-cyan-400" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Quản lý lịch hẹn</h1>
+              <p className="text-sm text-slate-400">
+                {account.data?.accountName || "Receptionist"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Link
+              to="/receptionist"
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              Quay lại
+            </Link>
+            <LogoutButton />
+          </div>
+        </div>
+      </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
-        {/* Controls */}
+        {/* Actions Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex-1 w-full md:w-auto">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search appointments..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-cyan-400 focus:outline-none"
+                placeholder="Tìm kiếm theo tên bệnh nhân, số điện thoại..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
             </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-black  focus:border-cyan-400 focus:outline-none"
-            >
-              <option value="all">All Status</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="rescheduled">Rescheduled</option>
-            </select>
           </div>
-          <button
-            onClick={handleCreateAppointment}
-            className="flex items-center space-x-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
-          >
-                         <Plus className="w-4 h-4" />
-            <span>New Appointment</span>
-          </button>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <select
+                value={filterStatus}
+                onChange={(e) =>
+                  setFilterStatus(e.target.value as AppointmentFilterStatus)
+                }
+                className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 appearance-none cursor-pointer"
+              >
+                <option value="ALL">Tất cả</option>
+                <option value="CREATED">Đã tạo</option>
+                <option value="SHOWED">Đã đến</option>
+                <option value="CANCELED">Đã hủy</option>
+                <option value="NO_SHOWED">Không đến</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+              <span className="text-slate-400">đến</span>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Tạo phiếu khám</span>
+            </button>
+          </div>
         </div>
 
-        {/* Appointments List */}
+        {/* Appointments Table */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-          <h2 className="text-xl font-bold mb-6">Appointments ({filteredAppointments.length})</h2>
-          
-          {filteredAppointments.length === 0 ? (
-            <div className="text-center py-8">
-                             <Calendar className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-400">No appointments found</p>
+          {appointments.isLoading || appointments.isRefetching ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+            </div>
+          ) : !appointments.data?.content ||
+            appointments.data.content.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400 text-lg">Không tìm thấy lịch hẹn</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredAppointments.map((appointment) => (
-                <div key={appointment.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="font-semibold text-lg">{appointment.patientName}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${getStatusColor(appointment.status)}`}>
-                          {getStatusIcon(appointment.status)}
-                          <span className="capitalize">{appointment.status}</span>
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                                                 <div className="flex items-center space-x-2">
-                           <UserCheck className="w-4 h-4 text-slate-400" />
-                           <span className="text-slate-300">{appointment.doctorName}</span>
-                         </div>
-                         <div className="flex items-center space-x-2">
-                           <Calendar className="w-4 h-4 text-slate-400" />
-                           <span className="text-slate-300">
-                             {new Date(appointment.appointmentDate).toLocaleDateString()} at {appointment.appointmentTime}
-                           </span>
-                         </div>
-                         <div className="flex items-center space-x-2">
-                           <Phone className="w-4 h-4 text-slate-400" />
-                           <span className="text-slate-300">{appointment.patientPhone}</span>
-                         </div>
-                         <div className="flex items-center space-x-2">
-                           <Mail className="w-4 h-4 text-slate-400" />
-                           <span className="text-slate-300">{appointment.patientEmail}</span>
-                         </div>
-                      </div>
-                      
-                      {appointment.notes && (
-                        <p className="text-sm text-slate-400 mt-2">{appointment.notes}</p>
-                      )}
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                                             <button
-                         onClick={() => handleEditAppointment(appointment)}
-                         className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
-                       >
-                         <Edit className="w-3 h-3" />
-                       </button>
-                       <button
-                         onClick={() => handleRescheduleAppointment(appointment.id)}
-                         className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-sm transition-colors"
-                       >
-                         <Calendar className="w-3 h-3" />
-                       </button>
-                       {appointment.status === 'scheduled' && (
-                         <button
-                           onClick={() => handleCancelAppointment(appointment.id)}
-                           className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition-colors"
-                         >
-                           <X className="w-3 h-3" />
-                         </button>
-                       )}
-                    </div>
-                  </div>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                        Bệnh nhân
+                      </th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                        Ngày hẹn
+                      </th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                        Gói khám
+                      </th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                        Bác sĩ
+                      </th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                        Trạng thái
+                      </th>
+                      <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {appointments.data.content.map((apt) => (
+                      <tr
+                        key={apt.id}
+                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      >
+                        <td className="py-4 px-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                              <UserCheck className="w-5 h-5 text-cyan-400" />
+                            </div>
+                            <span className="font-medium">
+                              {apt.patientName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center space-x-2">
+                            <Clock className="w-4 h-4 text-slate-400" />
+                            <span className="text-slate-300">{apt.date}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-slate-300">
+                          {apt.medicalPackageName || "N/A"}
+                        </td>
+                        <td className="py-4 px-4 text-slate-300">N/A</td>
+                        <td className="py-4 px-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                              apt.state
+                            )}`}
+                          >
+                            {getStatusLabel(apt.state)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedAppointment(apt);
+                                setShowDetailsModal(true);
+                              }}
+                              className="p-2 bg-blue-500/20 rounded-lg hover:bg-blue-500/30 transition-colors"
+                              title="Xem chi tiết"
+                            >
+                              <Eye className="w-4 h-4 text-blue-400" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedAppointment(apt);
+                                setShowEditModal(true);
+                              }}
+                              className="p-2 bg-green-500/20 rounded-lg hover:bg-green-500/30 transition-colors"
+                              title="Cập nhật trạng thái"
+                            >
+                              <Edit className="w-4 h-4 text-green-400" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAppointment(apt.id)}
+                              className="p-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors"
+                              title="Xóa"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-6">
+                <div className="text-sm text-slate-400">
+                  Hiển thị {appointments.data.content.length} /{" "}
+                  {appointments.data.total} lịch hẹn
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 bg-white/5 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Trước
+                  </button>
+                  <span className="px-4 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg">
+                    {currentPage} / {appointments.data.totalPages || 1}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    disabled={
+                      currentPage >= (appointments.data.totalPages || 1)
+                    }
+                    className="px-3 py-1 bg-white/5 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </main>
 
-      {/* Create/Edit Modal */}
-      {(showCreateModal || showEditModal) && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-6">
-              {showCreateModal ? 'Create New Appointment' : 'Edit Appointment'}
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Create Appointment Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-slate-800 z-10">
+              <h2 className="text-xl font-bold">Tạo lịch hẹn mới</h2>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  resetForm();
+                }}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAppointment} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Patient Name</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Patient ID *
+                  </label>
                   <input
                     type="text"
-                    value={formData.patientName}
-                    onChange={(e) => setFormData({...formData, patientName: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
                     required
+                    value={formData.patientId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, patientId: e.target.value })
+                    }
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    placeholder="Nhập Patient ID"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Patient Phone</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Slot ID *
+                  </label>
                   <input
-                    type="tel"
-                    value={formData.patientPhone}
-                    onChange={(e) => setFormData({...formData, patientPhone: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
+                    type="text"
                     required
+                    value={formData.slotId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, slotId: e.target.value })
+                    }
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    placeholder="Nhập Slot ID"
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Patient Email</label>
-                  <input
-                    type="email"
-                    value={formData.patientEmail}
-                    onChange={(e) => setFormData({...formData, patientEmail: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Patient Age</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="150"
-                    value={formData.patientAge}
-                    onChange={(e) => setFormData({...formData, patientAge: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                    placeholder="Enter age"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Patient Gender</label>
-                  <select
-                    value={formData.patientGender}
-                    onChange={(e) => setFormData({...formData, patientGender: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none [&>option]:text-black [&>option]:bg-white"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Doctor Name</label>
-                  <select
-                    value={formData.doctorName}
-                    onChange={(e) => setFormData({...formData, doctorName: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none [&>option]:text-black [&>option]:bg-white"
-                    required
-                  >
-                    <option value="">
-                      {doctors.length === 0 ? 'No doctors available' : 'Select a doctor'}
-                    </option>
-                    {doctors.map((doctor) => (
-                      <option key={doctor.id} value={doctor.fullName || doctor.displayName || doctor.name}>
-                        Dr. {doctor.fullName || doctor.name}
-                        {doctor.specialization && ` (${doctor.specialization})`}
-                      </option>
-                    ))}
-                  </select>
-                  {doctors.length === 0 && (
-                    <p className="text-xs text-red-400 mt-1">
-                      No doctors found. Please add doctors to the staffData collection with role: 'doctor'
-                    </p>
-                  )}
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Appointment Date</label>
-                  <input
-                    type="date"
-                    value={formData.appointmentDate}
-                    onChange={(e) => setFormData({...formData, appointmentDate: e.target.value})}
-                    min={getMinDate()}
-                    max={getMaxDate()}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                    required
-                  />
-                  <p className="text-xs text-slate-400 mt-1">
-                    Available: {getMinDate()} to {getMaxDate()}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Appointment Time</label>
-                  <select
-                    value={formData.appointmentTime}
-                    onChange={(e) => setFormData({...formData, appointmentTime: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none [&>option]:text-black [&>option]:bg-white"
-                    required
-                  >
-                    <option value="">Select time</option>
-                    {generateTimeSlots().map((slot) => (
-                      <option key={slot.value} value={slot.value}>
-                        {slot.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                                 <div>
-                   <label className="block text-sm font-medium text-slate-300 mb-2">Appointment Type</label>
-                   <select
-                     value={formData.appointmentType}
-                     onChange={(e) => setFormData({...formData, appointmentType: e.target.value})}
-                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none [&>option]:text-black [&>option]:bg-white"
-                   >
-                     <option value="consultation">Consultation</option>
-                     <option value="checkup">Checkup</option>
-                     <option value="emergency">Emergency</option>
-                     <option value="followup">Follow-up</option>
-                   </select>
-                 </div>
-                 
-                 <div>
-                   <label className="block text-sm font-medium text-slate-300 mb-2">Status</label>
-                   <select
-                     value={formData.status}
-                     onChange={(e) => setFormData({...formData, status: e.target.value})}
-                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none [&>option]:text-black [&>option]:bg-white"
-                   >
-                     <option value="scheduled">Scheduled</option>
-                     <option value="completed">Completed</option>
-                     <option value="cancelled">Cancelled</option>
-                     <option value="rescheduled">Rescheduled</option>
-                   </select>
-                 </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Notes</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  rows="3"
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                  placeholder="Additional notes..."
-                />
-              </div>
-              
-              {/* Medical Information Section */}
-              <div className="border-t border-white/10 pt-4">
-                <h3 className="text-lg font-semibold mb-4 text-cyan-400">Medical Information</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Symptoms</label>
-                    <textarea
-                      value={formData.symptoms}
-                      onChange={(e) => setFormData({...formData, symptoms: e.target.value})}
-                      rows="2"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                      placeholder="Current symptoms..."
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Medical History</label>
-                    <textarea
-                      value={formData.medicalHistory}
-                      onChange={(e) => setFormData({...formData, medicalHistory: e.target.value})}
-                      rows="2"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                      placeholder="Past medical conditions..."
-                    />
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Current Medications</label>
-                  <textarea
-                    value={formData.medications}
-                    onChange={(e) => setFormData({...formData, medications: e.target.value})}
-                    rows="2"
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
-                    placeholder="Current medications and dosages..."
-                  />
-                </div>
-                
-                {/* Vital Signs */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Vital Signs</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">Blood Pressure</label>
-                      <input
-                        type="text"
-                        value={formData.vitalSigns.bloodPressure}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          vitalSigns: {...formData.vitalSigns, bloodPressure: e.target.value}
-                        })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none text-sm"
-                        placeholder="e.g., 120/80"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">Heart Rate</label>
-                      <input
-                        type="text"
-                        value={formData.vitalSigns.heartRate}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          vitalSigns: {...formData.vitalSigns, heartRate: e.target.value}
-                        })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none text-sm"
-                        placeholder="e.g., 72 bpm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">Temperature</label>
-                      <input
-                        type="text"
-                        value={formData.vitalSigns.temperature}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          vitalSigns: {...formData.vitalSigns, temperature: e.target.value}
-                        })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none text-sm"
-                        placeholder="e.g., 98.6°F"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">Weight</label>
-                      <input
-                        type="text"
-                        value={formData.vitalSigns.weight}
-                        onChange={(e) => setFormData({
-                          ...formData, 
-                          vitalSigns: {...formData.vitalSigns, weight: e.target.value}
-                        })}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-400 focus:outline-none text-sm"
-                        placeholder="e.g., 180 lbs"
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
-                    setShowCreateModal(false)
-                    setShowEditModal(false)
+                    setShowCreateModal(false);
+                    resetForm();
                   }}
-                  className="px-4 py-2 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors"
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  disabled={createAppointment.isPending}
+                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 rounded-lg transition-colors flex items-center space-x-2"
                 >
-                  {loading ? 'Saving...' : (showCreateModal ? 'Create Appointment' : 'Update Appointment')}
+                  {createAppointment.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Đang tạo...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Tạo lịch hẹn</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Edit Status Modal */}
+      {showEditModal && selectedAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl border border-white/10 w-full max-w-md">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold">Cập nhật trạng thái</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedAppointment(null);
+                }}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-sm text-slate-400 mb-2">Bệnh nhân</p>
+                <p className="text-white font-medium">
+                  {selectedAppointment.patientName}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-400 mb-2">
+                  Trạng thái hiện tại
+                </p>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                    selectedAppointment.state
+                  )}`}
+                >
+                  {getStatusLabel(selectedAppointment.state)}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-400 mb-3">
+                  Chọn trạng thái mới
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      "CREATED",
+                      "SHOWED",
+                      "CANCELED",
+                      "NO_SHOWED",
+                    ] as AppointmentState[]
+                  ).map((state) => (
+                    <button
+                      key={state}
+                      onClick={() =>
+                        handleUpdateState(selectedAppointment.id, state)
+                      }
+                      disabled={updateAppointmentState.isPending}
+                      className={`px-4 py-3 rounded-lg border transition-colors ${getStatusColor(
+                        state
+                      )} hover:opacity-80 disabled:opacity-50`}
+                    >
+                      {getStatusLabel(state)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl border border-white/10 w-full max-w-2xl">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold">Chi tiết lịch hẹn</h2>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedAppointment(null);
+                }}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {appointment.isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400"></div>
+                </div>
+              ) : appointment.data ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-slate-400">Mã lịch hẹn</p>
+                      <p className="text-white font-medium font-mono">
+                        {appointment.data.id}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-400">Trạng thái</p>
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                          appointment.data.state
+                        )}`}
+                      >
+                        {getStatusLabel(appointment.data.state)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4">
+                    <h3 className="text-lg font-semibold mb-3">
+                      Thông tin bệnh nhân
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-slate-400">Họ tên</p>
+                        <p className="text-white">
+                          {appointment.data.patientName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Patient ID</p>
+                        <p className="text-white">
+                          {appointment.data.patientId}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Ngày hẹn</p>
+                        <p className="text-white">{appointment.data.date}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Ca khám</p>
+                        <p className="text-white">
+                          {appointment.data.shift === 0 ? "Sáng" : "Chiều"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-4">
+                    <h3 className="text-lg font-semibold mb-3">
+                      Thông tin khám
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-slate-400">Gói khám</p>
+                        <p className="text-white">
+                          {appointment.data.medicalPackageName || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">
+                          Medical Package ID
+                        </p>
+                        <p className="text-white font-mono">
+                          {appointment.data.medicalPackageId}
+                        </p>
+                      </div>
+                      {appointment.data.services &&
+                        appointment.data.services.length > 0 && (
+                          <div className="col-span-2">
+                            <p className="text-sm text-slate-400 mb-2">
+                              Dịch vụ
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {appointment.data.services.map((service) => (
+                                <span
+                                  key={service.id}
+                                  className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-sm"
+                                >
+                                  {service.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <AlertTriangle className="w-12 h-12 text-orange-400 mx-auto mb-2" />
+                  <p className="text-slate-400">
+                    Không thể tải thông tin chi tiết
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

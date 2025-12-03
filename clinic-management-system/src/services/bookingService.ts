@@ -106,9 +106,7 @@ const useBookingService = ({
       state: AppointmentState;
     }) =>
       axiosInstance
-        .patch(`/api/appointments/${appointmentId}`, state, {
-          headers: { "Content-Type": "text/plain" },
-        })
+        .patch(`/api/appointments/${appointmentId}`, state)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -136,6 +134,7 @@ const useBookingService = ({
     appointments,
     appointment,
     createAppointment,
+
     updateAppointmentState,
     deleteAppointment,
   };

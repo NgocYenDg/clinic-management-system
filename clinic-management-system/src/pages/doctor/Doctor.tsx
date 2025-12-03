@@ -1,110 +1,244 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { Link } from 'react-router-dom'
-import LogoutButton from '../../components/LogoutButton'
-import EmailVerificationStatus from '../../components/EmailVerificationStatus'
-import { FaUserDoctor, FaCalendar, FaUserInjured, FaPills, FaCalendarDay, FaFileLines, FaPlus, FaHashtag } from 'react-icons/fa6'
-import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore'
-import { db } from '../../firebase/config'
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import LogoutButton from "../../components/LogoutButton";
+import {
+  FaUserDoctor,
+  FaCalendar,
+  FaUserInjured,
+  FaPills,
+  FaCalendarDay,
+  FaFileLines,
+  FaPlus,
+  FaHashtag,
+} from "react-icons/fa6";
+import {
+  examinationFlowService,
+  QueueItemResponse,
+} from "../../services/examinationFlowService";
+import toast from "react-hot-toast";
+import useAuthService from "@/services/authService";
+import useStaffService from "@/services/staffService";
 
 export default function Doctor() {
-  const { currentUser, userRole } = useAuth()
+  const { account } = useAuthService();
+  const staffId = account.data?.staffId;
+  const { staff } = useStaffService({ staffId });
+
   const [stats, setStats] = useState({
     todayAppointments: 0,
     waitingPatients: 0,
     weeklyPrescriptions: 0,
-    loading: true
-  })
-  const [doctorName, setDoctorName] = useState('')
+    loading: true,
+  });
+  const [wsConnected, setWsConnected] = useState(false);
+  const [queueSize, setQueueSize] = useState<number>(0);
+  const [currentQueueItem, setCurrentQueueItem] =
+    useState<QueueItemResponse | null>(null);
 
-  // Fetch doctor's name from staffData collection
+  // Extract doctor info from staff data
+  const doctorName = staff.data?.name || "Doctor";
+  const departmentId = staff.data?.departmentId || null;
+
+  // Connect to ExaminationFlow WebSocket
   useEffect(() => {
-    if (!currentUser) return
-
-    const fetchDoctorName = async () => {
+    const connectWebSocket = async () => {
       try {
-        const userDocRef = doc(db, 'staffData', currentUser.uid)
-        const userDoc = await getDoc(userDocRef)
-        
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          const name = userData.fullName || currentUser.displayName || 'Unknown Doctor'
-          setDoctorName(name)
-        } else {
-          setDoctorName(currentUser.displayName || 'Unknown Doctor')
+        if (examinationFlowService.isConnected()) {
+          return;
         }
+        // Get JWT token from localStorage
+        const tokensStr = localStorage.getItem("tokens");
+        if (!tokensStr) {
+          console.warn("No authentication token found");
+          return;
+        }
+
+        const tokens = JSON.parse(tokensStr) as {
+          token: string;
+          refreshToken: string;
+        };
+
+        // Connect to WebSocket
+        examinationFlowService.connect(
+          tokens.token,
+          () => {
+            console.log("Successfully connected to ExaminationFlow WebSocket");
+            setWsConnected(true);
+            toast.success("Đã kết nối hàng đợi khám bệnh");
+
+            // Subscribe to queue items
+            examinationFlowService.subscribeToQueueItems(
+              (item: QueueItemResponse) => {
+                console.log("Received queue item:", item);
+                setCurrentQueueItem(item);
+                toast.success("Nhận được bệnh nhân mới từ hàng đợi");
+              }
+            );
+
+            // Subscribe to queue size updates
+            examinationFlowService.subscribeToQueueSize((size: number) => {
+              console.log("Queue size updated:", size);
+              setQueueSize(size);
+            });
+
+            // Subscribe to errors
+            examinationFlowService.subscribeToErrors((error: string) => {
+              console.error("Queue error:", error);
+            });
+
+            // Get in-progress item if any
+            examinationFlowService.getInProgressItem();
+
+            // Query queue size if departmentId is available
+            if (departmentId) {
+              examinationFlowService.subscribeToQueueBroadcast(
+                departmentId,
+                (size: number) => {
+                  console.log("Queue size updated:", size);
+                  setQueueSize(size);
+                }
+              );
+
+              examinationFlowService.queryQueueSize(departmentId);
+              // Subscribe to queue broadcasts for this department
+              examinationFlowService.subscribeToQueueBroadcast(
+                departmentId,
+                (data: any) => {
+                  console.log("Queue broadcast update:", data);
+                }
+              );
+            }
+          },
+          (error) => {
+            console.error("WebSocket connection error:", error);
+            setWsConnected(false);
+            toast.error("Không thể kết nối hàng đợi khám bệnh");
+          }
+        );
       } catch (error) {
-        console.error('Error fetching doctor name:', error)
-        setDoctorName(currentUser.displayName || 'Unknown Doctor')
+        console.error("Error connecting to WebSocket:", error);
+        toast.error("Lỗi khi kết nối hàng đợi");
       }
+    };
+
+    if (staffId && departmentId) {
+      connectWebSocket();
     }
 
-    fetchDoctorName()
-  }, [currentUser])
+    // Cleanup on unmount
+    return () => {
+      if (examinationFlowService.isConnected()) {
+        examinationFlowService.disconnect();
+        setWsConnected(false);
+      }
+    };
+  }, [staffId, departmentId]);
+
+  // Function to take next patient from queue
+  const handleTakeNextPatient = () => {
+    if (!departmentId) {
+      toast.error("Không tìm thấy thông tin phòng ban");
+      return;
+    }
+
+    if (!examinationFlowService.isConnected()) {
+      toast.error("Chưa kết nối đến hàng đợi");
+      return;
+    }
+
+    examinationFlowService.takeNextItem(departmentId);
+    toast.loading("Đang lấy bệnh nhân tiếp theo...", { duration: 2000 });
+  };
+
+  // Function to complete current patient
+  const handleCompletePatient = (
+    examId: string,
+    serviceId: string,
+    data: string
+  ) => {
+    if (!currentQueueItem) {
+      toast.error("Không có bệnh nhân đang khám");
+      return;
+    }
+
+    if (!examinationFlowService.isConnected()) {
+      toast.error("Chưa kết nối đến hàng đợi");
+      return;
+    }
+
+    examinationFlowService.completeItem(
+      currentQueueItem.queueItemId,
+      examId,
+      serviceId,
+      data
+    );
+    toast.success("Đã hoàn thành khám bệnh");
+    setCurrentQueueItem(null);
+  };
 
   // Fetch real-time stats
-  useEffect(() => {
-    if (!doctorName) return
+  // useEffect(() => {
+  //   if (!doctorName) return
 
-    const today = new Date().toISOString().split('T')[0]
-    const weekStart = new Date()
-    weekStart.setDate(weekStart.getDate() - 7)
+  //   const today = new Date().toISOString().split('T')[0]
+  //   const weekStart = new Date()
+  //   weekStart.setDate(weekStart.getDate() - 7)
 
-    // Query for today's appointments
-    const todayAppointmentsRef = collection(db, 'appointments')
-    const todayQuery = query(
-      todayAppointmentsRef,
-      where('appointmentDate', '==', today),
-      where('doctorName', '==', doctorName)
-    )
+  //   // Query for today's appointments
+  //   const todayAppointmentsRef = collection(db, 'appointments')
+  //   const todayQuery = query(
+  //     todayAppointmentsRef,
+  //     where('appointmentDate', '==', today),
+  //     where('doctorName', '==', doctorName)
+  //   )
 
-    // Query for waiting patients (tokens generated but not completed)
-    const waitingPatientsRef = collection(db, 'appointments')
-    const waitingQuery = query(
-      waitingPatientsRef,
-      where('appointmentDate', '==', today),
-      where('doctorName', '==', doctorName)
-    )
+  //   // Query for waiting patients (tokens generated but not completed)
+  //   const waitingPatientsRef = collection(db, 'appointments')
+  //   const waitingQuery = query(
+  //     waitingPatientsRef,
+  //     where('appointmentDate', '==', today),
+  //     where('doctorName', '==', doctorName)
+  //   )
 
-    // Query for weekly prescriptions
-    const weeklyPrescriptionsRef = collection(db, 'prescriptions')
-    const weeklyQuery = query(
-      weeklyPrescriptionsRef,
-      where('doctorId', '==', currentUser.uid)
-    )
+  //   // Query for weekly prescriptions
+  //   const weeklyPrescriptionsRef = collection(db, 'prescriptions')
+  //   const weeklyQuery = query(
+  //     weeklyPrescriptionsRef,
+  //     where('doctorId', '==', staffId || '')
+  //   )
 
-    // Set up real-time listeners
-    const unsubscribeToday = onSnapshot(todayQuery, (snapshot) => {
-      const todayCount = snapshot.docs.length
-      setStats(prev => ({ ...prev, todayAppointments: todayCount }))
-    })
+  //   // Set up real-time listeners
+  //   const unsubscribeToday = onSnapshot(todayQuery, (snapshot) => {
+  //     const todayCount = snapshot.docs.length
+  //     setStats(prev => ({ ...prev, todayAppointments: todayCount }))
+  //   })
 
-    const unsubscribeWaiting = onSnapshot(waitingQuery, (snapshot) => {
-      const waitingCount = snapshot.docs.filter(doc => {
-        const data = doc.data()
-        return data.status === 'token_generated' || data.status === 'in_progress'
-      }).length
-      setStats(prev => ({ ...prev, waitingPatients: waitingCount }))
-    })
+  //   const unsubscribeWaiting = onSnapshot(waitingQuery, (snapshot) => {
+  //     const waitingCount = snapshot.docs.filter(doc => {
+  //       const data = doc.data()
+  //       return data.status === 'token_generated' || data.status === 'in_progress'
+  //     }).length
+  //     setStats(prev => ({ ...prev, waitingPatients: waitingCount }))
+  //   })
 
-    const unsubscribeWeekly = onSnapshot(weeklyQuery, (snapshot) => {
-      const weeklyCount = snapshot.docs.filter(doc => {
-        const data = doc.data()
-        const createdAt = new Date(data.createdAt)
-        return createdAt >= weekStart
-      }).length
-      setStats(prev => ({ ...prev, weeklyPrescriptions: weeklyCount, loading: false }))
-    })
+  //   const unsubscribeWeekly = onSnapshot(weeklyQuery, (snapshot) => {
+  //     const weeklyCount = snapshot.docs.filter(doc => {
+  //       const data = doc.data()
+  //       const createdAt = new Date(data.createdAt)
+  //       return createdAt >= weekStart
+  //     }).length
+  //     setStats(prev => ({ ...prev, weeklyPrescriptions: weeklyCount, loading: false }))
+  //   })
 
-    return () => {
-      unsubscribeToday()
-      unsubscribeWaiting()
-      unsubscribeWeekly()
-    }
-  }, [doctorName, currentUser])
+  //   return () => {
+  //     unsubscribeToday()
+  //     unsubscribeWaiting()
+  //     unsubscribeWeekly()
+  //   }
+  // }, [doctorName, staffId])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
       {/* Header */}
       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -113,8 +247,10 @@ export default function Doctor() {
               <FaUserDoctor className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Bảng điều khiển dành cho bác sĩ</h1>
-              <p className="text-sm text-slate-400">{currentUser?.displayName || 'Doctor'}</p>
+              <h1 className="text-xl font-bold">
+                Bảng điều khiển dành cho bác sĩ
+              </h1>
+              <p className="text-sm text-slate-400">{doctorName}</p>
             </div>
           </div>
           <LogoutButton />
@@ -123,9 +259,118 @@ export default function Doctor() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
+        {/* Queue Status Card - New */}
+        {wsConnected && departmentId && (
+          <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <h3 className="text-lg font-semibold">
+                  Hàng đợi khám bệnh (Đã kết nối)
+                </h3>
+              </div>
+              <button
+                onClick={handleTakeNextPatient}
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+              >
+                <FaUserInjured className="w-4 h-4" />
+                <span>Lấy bệnh nhân tiếp theo</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/5 rounded-lg p-4">
+                <p className="text-sm text-slate-400">Số bệnh nhân đang chờ</p>
+                <p className="text-2xl font-bold text-cyan-400">{queueSize}</p>
+              </div>
+
+              <div className="bg-white/5 rounded-lg p-4">
+                <p className="text-sm text-slate-400">Bệnh nhân hiện tại</p>
+                <p className="text-sm font-medium text-white">
+                  {currentQueueItem ? "Đang khám" : "Không có"}
+                </p>
+              </div>
+            </div>
+
+            {/* Current Patient Details */}
+            {currentQueueItem && (
+              <div className="mt-4 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-blue-400 mb-2">
+                  Thông tin bệnh nhân hiện tại
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Mã hàng đợi:</span>
+                    <span className="text-white font-mono">
+                      {currentQueueItem.queueItemId}
+                    </span>
+                  </div>
+                  {currentQueueItem.medicalForm && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Mã hồ sơ y tế:</span>
+                        <span className="text-white font-mono">
+                          {currentQueueItem.medicalForm.id}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Trạng thái:</span>
+                        <span className="text-white">
+                          {currentQueueItem.medicalForm.medicalFormStatus}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {currentQueueItem.requestedService && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Dịch vụ:</span>
+                        <span className="text-white">
+                          {currentQueueItem.requestedService.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Độ ưu tiên:</span>
+                        <span className="text-white">
+                          {currentQueueItem.requestedService.processingPriority}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    if (
+                      currentQueueItem.medicalForm?.examination?.id &&
+                      currentQueueItem.requestedService?.serviceId
+                    ) {
+                      handleCompletePatient(
+                        currentQueueItem.medicalForm.examination.id,
+                        currentQueueItem.requestedService.serviceId,
+                        JSON.stringify({
+                          completed: true,
+                          timestamp: new Date().toISOString(),
+                        })
+                      );
+                    } else {
+                      toast.error("Thiếu thông tin để hoàn thành khám bệnh");
+                    }
+                  }}
+                  className="mt-4 w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  Hoàn thành khám bệnh
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Quick Stats */}
-          <Link to="/doctor/appointments" className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer">
+          <Link
+            to="/doctor/appointments"
+            className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FaCalendar className="w-6 h-6 text-blue-400" />
@@ -140,18 +385,27 @@ export default function Doctor() {
               </div>
             ) : (
               <>
-                <p className="text-3xl font-bold text-blue-400">{stats.todayAppointments}</p>
+                <p className="text-3xl font-bold text-blue-400">
+                  {stats.todayAppointments}
+                </p>
                 <p className="text-sm text-slate-400 mt-2">
-                  {stats.todayAppointments === 0 ? 'Không có lịch hẹn nào hôm nay' : 
-                   stats.todayAppointments === 1 ? 'Có 1 lịch hẹn hôm nay' : 
-                   'Các lịch hẹn hôm nay'}
+                  {stats.todayAppointments === 0
+                    ? "Không có lịch hẹn nào hôm nay"
+                    : stats.todayAppointments === 1
+                    ? "Có 1 lịch hẹn hôm nay"
+                    : "Các lịch hẹn hôm nay"}
                 </p>
               </>
             )}
-            <p className="text-xs text-blue-400 mt-2">Nhấn để xem tất cả lịch hẹn →</p>
+            <p className="text-xs text-blue-400 mt-2">
+              Nhấn để xem tất cả lịch hẹn →
+            </p>
           </Link>
 
-          <Link to="/doctor/tokens" className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer">
+          <Link
+            to="/doctor/tokens"
+            className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FaHashtag className="w-6 h-6 text-yellow-400" />
@@ -166,18 +420,27 @@ export default function Doctor() {
               </div>
             ) : (
               <>
-                <p className="text-3xl font-bold text-yellow-400">{stats.waitingPatients}</p>
+                <p className="text-3xl font-bold text-yellow-400">
+                  {stats.waitingPatients}
+                </p>
                 <p className="text-sm text-slate-400 mt-2">
-                  {stats.waitingPatients === 0 ? 'Không có bệnh nhân nào đang chờ' :
-                   stats.waitingPatients === 1 ? 'Có 1 bệnh nhân đang chờ' :
-                   'Các bệnh nhân đang chờ'}
+                  {stats.waitingPatients === 0
+                    ? "Không có bệnh nhân nào đang chờ"
+                    : stats.waitingPatients === 1
+                    ? "Có 1 bệnh nhân đang chờ"
+                    : "Các bệnh nhân đang chờ"}
                 </p>
               </>
             )}
-            <p className="text-xs text-yellow-400 mt-2">Nhấn để xem tất cả bệnh nhân →</p>
+            <p className="text-xs text-yellow-400 mt-2">
+              Nhấn để xem tất cả bệnh nhân →
+            </p>
           </Link>
 
-          <Link to="/doctor/prescriptions" className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer">
+          <Link
+            to="/doctor/prescriptions"
+            className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl hover:bg-white/10 transition-colors cursor-pointer"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <FaPills className="w-6 h-6 text-purple-400" />
@@ -192,14 +455,19 @@ export default function Doctor() {
               </div>
             ) : (
               <>
-                <p className="text-3xl font-bold text-purple-400">{stats.weeklyPrescriptions}</p>
+                <p className="text-3xl font-bold text-purple-400">
+                  {stats.weeklyPrescriptions}
+                </p>
                 <p className="text-sm text-slate-400 mt-2">
-                  {stats.weeklyPrescriptions === 0 ? 'Không có đơn thuốc nào trong tuần này' :
-                   'Các đơn thuốc trong tuần này'}
+                  {stats.weeklyPrescriptions === 0
+                    ? "Không có đơn thuốc nào trong tuần này"
+                    : "Các đơn thuốc trong tuần này"}
                 </p>
               </>
             )}
-            <p className="text-xs text-purple-400 mt-2">Nhấn để quản lý đơn thuốc →</p>
+            <p className="text-xs text-purple-400 mt-2">
+              Nhấn để quản lý đơn thuốc →
+            </p>
           </Link>
         </div>
 
@@ -207,32 +475,47 @@ export default function Doctor() {
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Các thao tác nhanh</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link to="/doctor/appointments" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+            <Link
+              to="/doctor/appointments"
+              className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <FaCalendar className="w-5 h-5 text-blue-400" />
                 <div>
                   <h3 className="font-semibold">Xem lịch hẹn</h3>
-                  <p className="text-sm text-slate-400">Quản lý lịch hẹn bệnh nhân</p>
+                  <p className="text-sm text-slate-400">
+                    Quản lý lịch hẹn bệnh nhân
+                  </p>
                 </div>
               </div>
             </Link>
 
-            <Link to="/doctor/prescriptions/create" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+            <Link
+              to="/doctor/prescriptions/create"
+              className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <FaPlus className="w-5 h-5 text-green-400" />
                 <div>
                   <h3 className="font-semibold">Tạo đơn thuốc</h3>
-                  <p className="text-sm text-slate-400">Tạo đơn thuốc cho bệnh nhân</p>
+                  <p className="text-sm text-slate-400">
+                    Tạo đơn thuốc cho bệnh nhân
+                  </p>
                 </div>
               </div>
             </Link>
 
-            <Link to="/doctor/prescriptions" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+            <Link
+              to="/doctor/prescriptions"
+              className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <FaFileLines className="w-5 h-5 text-purple-400" />
                 <div>
                   <h3 className="font-semibold">Xem đơn thuốc</h3>
-                  <p className="text-sm text-slate-400">Quản lý tất cả các đơn thuốc</p>
+                  <p className="text-sm text-slate-400">
+                    Quản lý tất cả các đơn thuốc
+                  </p>
                 </div>
               </div>
             </Link>
@@ -247,12 +530,17 @@ export default function Doctor() {
               </div>
             </Link> */}
 
-            <Link to="/doctor/tokens" className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors">
+            <Link
+              to="/doctor/tokens"
+              className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
+            >
               <div className="flex items-center space-x-3">
                 <FaHashtag className="w-5 h-5 text-blue-400" />
                 <div>
                   <h3 className="font-semibold">Bệnh nhân đang chờ</h3>
-                  <p className="text-sm text-slate-400">Xem và quản lý bệnh nhân đang chờ</p>
+                  <p className="text-sm text-slate-400">
+                    Xem và quản lý bệnh nhân đang chờ
+                  </p>
                 </div>
               </div>
             </Link>
@@ -265,25 +553,37 @@ export default function Doctor() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-slate-400 text-sm">Email</p>
-              <p className="text-white font-medium">{currentUser?.email}</p>
+              <p className="text-white font-medium">
+                {staff.data?.email || "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-slate-400 text-sm">Chức vụ</p>
-              <p className="text-blue-400 font-medium capitalize">{userRole}</p>
+              <p className="text-blue-400 font-medium capitalize">
+                {staff.data?.role === 0
+                  ? "Doctor"
+                  : staff.data?.role === 1
+                  ? "Receptionist"
+                  : staff.data?.role === 2
+                  ? "Manager"
+                  : staff.data?.role === 3
+                  ? "Admin"
+                  : "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-slate-400 text-sm">Họ và tên</p>
-              <p className="text-white font-medium">{currentUser?.displayName}</p>
+              <p className="text-white font-medium">{doctorName}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Xác thực email</p>
-              <EmailVerificationStatus />
+              <p className="text-slate-400 text-sm">Phòng ban</p>
+              <p className="text-white font-medium">
+                {staff.data?.departmentName || "N/A"}
+              </p>
             </div>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }
-
-
