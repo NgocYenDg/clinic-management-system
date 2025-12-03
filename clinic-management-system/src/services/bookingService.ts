@@ -62,6 +62,22 @@ const useBookingService = ({
     },
   });
 
+  const updateSlot = useMutation({
+    mutationFn: ({
+      slotId,
+      maxQuantity,
+    }: {
+      slotId: string;
+      maxQuantity: number;
+    }) =>
+      axiosInstance
+        .patch(`/api/slot/${slotId}`, { maxQuantity })
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["slots"] });
+    },
+  });
+
   // Appointment queries
   const appointments = useQuery({
     queryKey: ["appointments", appointmentsParams],
@@ -130,6 +146,7 @@ const useBookingService = ({
     // Slots
     slots,
     createSlot,
+    updateSlot,
     // Appointments
     appointments,
     appointment,
