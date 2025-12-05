@@ -282,6 +282,25 @@ export default function Admin() {
     }
   };
 
+  const handleUpdateMedicalPackage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMedicalPackage) return;
+
+    try {
+      // TODO: Add update mutation when API is ready
+      // await updateMedicalPackage.mutateAsync({
+      //   packageId: selectedMedicalPackage.medicalPackageId,
+      //   request: medicalPackageFormData
+      // });
+      setShowEditModal(false);
+      setSelectedMedicalPackage(null);
+      resetMedicalPackageForm();
+      medicalPackages.refetch();
+    } catch (error) {
+      console.error("Error updating medical package:", error);
+    }
+  };
+
   const handleDeleteMedicalPackage = async () => {
     if (!selectedMedicalPackage) return;
 
@@ -305,6 +324,25 @@ export default function Admin() {
       medicalServices.refetch();
     } catch (error) {
       console.error("Error creating medical service:", error);
+    }
+  };
+
+  const handleUpdateMedicalService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMedicalService) return;
+
+    try {
+      // TODO: Add update mutation when API is ready
+      // await updateMedicalService.mutateAsync({
+      //   serviceId: selectedMedicalService.medicalServiceId,
+      //   request: medicalServiceFormData
+      // });
+      setShowEditModal(false);
+      setSelectedMedicalService(null);
+      resetMedicalServiceForm();
+      medicalServices.refetch();
+    } catch (error) {
+      console.error("Error updating medical service:", error);
     }
   };
 
@@ -357,6 +395,18 @@ export default function Admin() {
     setShowDeleteModal(true);
   };
 
+  const openEditMedicalPackageModal = (pkg: IMedicalPackage) => {
+    setSelectedMedicalPackage(pkg);
+    setMedicalPackageFormData({
+      name: pkg.name,
+      description: pkg.description,
+      price: pkg.price,
+      image: pkg.image || "",
+      serviceIds: pkg.services?.map((s) => s.medicalServiceId) || [],
+    });
+    setShowEditModal(true);
+  };
+
   const openDeleteMedicalPackageModal = (pkg: IMedicalPackage) => {
     setSelectedMedicalPackage(pkg);
     setShowDeleteModal(true);
@@ -370,6 +420,18 @@ export default function Admin() {
   const closeMedicalPackageDetailView = () => {
     setShowMedicalPackageDetail(false);
     setSelectedMedicalPackageId(undefined);
+  };
+
+  const openEditMedicalServiceModal = (service: MedicalServiceDTO) => {
+    setSelectedMedicalService(service);
+    setMedicalServiceFormData({
+      name: service.name,
+      description: service.description,
+      departmentId: service.departmentId,
+      processingPriority: service.processingPriority,
+      formTemplate: service.formTemplate || "",
+    });
+    setShowEditModal(true);
   };
 
   const openDeleteMedicalServiceModal = (service: MedicalServiceDTO) => {
@@ -690,10 +752,7 @@ export default function Admin() {
                 <>
                   <MedicalPackageTable
                     packages={medicalPackages.data?.content || []}
-                    onEdit={(pkg) => {
-                      // TODO: Implement edit functionality
-                      console.log("Edit medical package:", pkg);
-                    }}
+                    onEdit={openEditMedicalPackageModal}
                     onDelete={openDeleteMedicalPackageModal}
                     onViewDetail={openMedicalPackageDetailView}
                   />
@@ -715,10 +774,7 @@ export default function Admin() {
                 <>
                   <MedicalServiceTable
                     services={medicalServices.data?.content || []}
-                    onEdit={(service) => {
-                      // TODO: Implement edit functionality
-                      console.log("Edit medical service:", service);
-                    }}
+                    onEdit={openEditMedicalServiceModal}
                     onDelete={openDeleteMedicalServiceModal}
                   />
                   <Pagination
@@ -852,6 +908,21 @@ export default function Admin() {
             onChange={handleMedicalPackageFormChange}
           />
 
+          <MedicalPackageFormModal
+            isOpen={showEditModal && !!selectedMedicalPackage}
+            title="Chỉnh sửa gói khám"
+            formData={medicalPackageFormData}
+            isSubmitting={false}
+            services={medicalServices.data?.content || []}
+            onClose={() => {
+              setShowEditModal(false);
+              setSelectedMedicalPackage(null);
+              resetMedicalPackageForm();
+            }}
+            onSubmit={handleUpdateMedicalPackage}
+            onChange={handleMedicalPackageFormChange}
+          />
+
           <DeleteConfirmModal
             isOpen={showDeleteModal && !!selectedMedicalPackage}
             staffName={selectedMedicalPackage?.name || ""}
@@ -879,6 +950,21 @@ export default function Admin() {
               resetMedicalServiceForm();
             }}
             onSubmit={handleCreateMedicalService}
+            onChange={handleMedicalServiceFormChange}
+          />
+
+          <MedicalServiceFormModal
+            isOpen={showEditModal && !!selectedMedicalService}
+            title="Chỉnh sửa dịch vụ"
+            formData={medicalServiceFormData}
+            isSubmitting={false}
+            departments={departments.data?.content || []}
+            onClose={() => {
+              setShowEditModal(false);
+              setSelectedMedicalService(null);
+              resetMedicalServiceForm();
+            }}
+            onSubmit={handleUpdateMedicalService}
             onChange={handleMedicalServiceFormChange}
           />
 

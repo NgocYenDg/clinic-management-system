@@ -5,6 +5,7 @@ declare global {
     description: string;
     price: number;
     image: string;
+    services: MedicalServiceDTO[];
   }
 
   // Request types
