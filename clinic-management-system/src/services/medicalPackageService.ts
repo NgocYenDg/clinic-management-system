@@ -77,6 +77,73 @@ const useMedicalPackageService = (params?: {
     },
   });
 
+  const updateMedicalPackageInfo = useMutation({
+    mutationFn: ({
+      id,
+      request,
+    }: {
+      id: string;
+      request: UpdateMedicalPackageInfoRequest;
+    }) =>
+      axiosInstance
+        .put(`/api/medical-package/${id}`, request)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
+      queryClient.invalidateQueries({ queryKey: ["medical-package"] });
+    },
+  });
+
+  const updateMedicalPackagePrice = useMutation({
+    mutationFn: ({
+      id,
+      request,
+    }: {
+      id: string;
+      request: UpdateMedicalPackagePriceRequest;
+    }) =>
+      axiosInstance
+        .patch(`/api/medical-package/${id}`, request)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
+      queryClient.invalidateQueries({ queryKey: ["medical-package"] });
+    },
+  });
+
+  const deleteMedicalPackage = useMutation({
+    mutationFn: (id: string) =>
+      axiosInstance.delete(`/api/medical-package/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
+    },
+  });
+
+  const updateMedicalService = useMutation({
+    mutationFn: ({
+      id,
+      request,
+    }: {
+      id: string;
+      request: UpdateMedicalServiceRequest;
+    }) =>
+      axiosInstance
+        .put(`/api/medical-service/${id}`, request)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medical-services"] });
+      queryClient.invalidateQueries({ queryKey: ["medical-service"] });
+    },
+  });
+
+  const deleteMedicalService = useMutation({
+    mutationFn: (id: string) =>
+      axiosInstance.delete(`/api/medical-service/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medical-services"] });
+    },
+  });
+
   return {
     // Queries
     medicalPackages,
@@ -86,6 +153,11 @@ const useMedicalPackageService = (params?: {
     // Mutations
     createMedicalPackage,
     createMedicalService,
+    updateMedicalPackageInfo,
+    updateMedicalPackagePrice,
+    deleteMedicalPackage,
+    updateMedicalService,
+    deleteMedicalService,
   };
 };
 

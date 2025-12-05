@@ -25,6 +25,25 @@ declare global {
     formTemplate: string;
   }
 
+  interface UpdateMedicalPackageInfoRequest {
+    name: string;
+    description: string;
+    image: string;
+    serviceIds: string[];
+  }
+
+  interface UpdateMedicalPackagePriceRequest {
+    price: number;
+  }
+
+  interface UpdateMedicalServiceRequest {
+    name: string;
+    description: string;
+    departmentId: string;
+    processingPriority: number;
+    formTemplate: string;
+  }
+
   interface MedicalServiceDTO {
     medicalServiceId: string;
     name: string;

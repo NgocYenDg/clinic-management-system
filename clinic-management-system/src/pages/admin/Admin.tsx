@@ -88,6 +88,11 @@ export default function Admin() {
     medicalServices,
     createMedicalPackage,
     createMedicalService,
+    updateMedicalPackageInfo,
+    updateMedicalPackagePrice,
+    deleteMedicalPackage,
+    updateMedicalService,
+    deleteMedicalService,
   } = useMedicalPackageService({
     medicalPackagesParams:
       activeTab === "medical-package"
@@ -287,11 +292,23 @@ export default function Admin() {
     if (!selectedMedicalPackage) return;
 
     try {
-      // TODO: Add update mutation when API is ready
-      // await updateMedicalPackage.mutateAsync({
-      //   packageId: selectedMedicalPackage.medicalPackageId,
-      //   request: medicalPackageFormData
-      // });
+      await Promise.all([
+        updateMedicalPackageInfo.mutateAsync({
+          id: selectedMedicalPackage.medicalPackageId,
+          request: {
+            name: medicalPackageFormData.name,
+            description: medicalPackageFormData.description,
+            image: medicalPackageFormData.image,
+            serviceIds: medicalPackageFormData.serviceIds,
+          },
+        }),
+        updateMedicalPackagePrice.mutateAsync({
+          id: selectedMedicalPackage.medicalPackageId,
+          request: {
+            price: medicalPackageFormData.price,
+          },
+        }),
+      ]);
       setShowEditModal(false);
       setSelectedMedicalPackage(null);
       resetMedicalPackageForm();
@@ -305,7 +322,9 @@ export default function Admin() {
     if (!selectedMedicalPackage) return;
 
     try {
-      // TODO: Add delete mutation when API is ready
+      await deleteMedicalPackage.mutateAsync(
+        selectedMedicalPackage.medicalPackageId
+      );
       setShowDeleteModal(false);
       setSelectedMedicalPackage(null);
       medicalPackages.refetch();
@@ -332,11 +351,16 @@ export default function Admin() {
     if (!selectedMedicalService) return;
 
     try {
-      // TODO: Add update mutation when API is ready
-      // await updateMedicalService.mutateAsync({
-      //   serviceId: selectedMedicalService.medicalServiceId,
-      //   request: medicalServiceFormData
-      // });
+      await updateMedicalService.mutateAsync({
+        id: selectedMedicalService.medicalServiceId,
+        request: {
+          name: medicalServiceFormData.name,
+          description: medicalServiceFormData.description,
+          departmentId: medicalServiceFormData.departmentId,
+          processingPriority: medicalServiceFormData.processingPriority,
+          formTemplate: medicalServiceFormData.formTemplate,
+        },
+      });
       setShowEditModal(false);
       setSelectedMedicalService(null);
       resetMedicalServiceForm();
@@ -350,7 +374,9 @@ export default function Admin() {
     if (!selectedMedicalService) return;
 
     try {
-      // TODO: Add delete mutation when API is ready
+      await deleteMedicalService.mutateAsync(
+        selectedMedicalService.medicalServiceId
+      );
       setShowDeleteModal(false);
       setSelectedMedicalService(null);
       medicalServices.refetch();
@@ -912,7 +938,10 @@ export default function Admin() {
             isOpen={showEditModal && !!selectedMedicalPackage}
             title="Chỉnh sửa gói khám"
             formData={medicalPackageFormData}
-            isSubmitting={false}
+            isSubmitting={
+              updateMedicalPackageInfo.isPending ||
+              updateMedicalPackagePrice.isPending
+            }
             services={medicalServices.data?.content || []}
             onClose={() => {
               setShowEditModal(false);
@@ -926,7 +955,7 @@ export default function Admin() {
           <DeleteConfirmModal
             isOpen={showDeleteModal && !!selectedMedicalPackage}
             staffName={selectedMedicalPackage?.name || ""}
-            isDeleting={false}
+            isDeleting={deleteMedicalPackage.isPending}
             onConfirm={handleDeleteMedicalPackage}
             onCancel={() => {
               setShowDeleteModal(false);
@@ -957,7 +986,7 @@ export default function Admin() {
             isOpen={showEditModal && !!selectedMedicalService}
             title="Chỉnh sửa dịch vụ"
             formData={medicalServiceFormData}
-            isSubmitting={false}
+            isSubmitting={updateMedicalService.isPending}
             departments={departments.data?.content || []}
             onClose={() => {
               setShowEditModal(false);
@@ -971,7 +1000,7 @@ export default function Admin() {
           <DeleteConfirmModal
             isOpen={showDeleteModal && !!selectedMedicalService}
             staffName={selectedMedicalService?.name || ""}
-            isDeleting={false}
+            isDeleting={deleteMedicalService.isPending}
             onConfirm={handleDeleteMedicalService}
             onCancel={() => {
               setShowDeleteModal(false);
