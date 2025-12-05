@@ -1,7 +1,7 @@
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { useState } from "react";
 import useBookingService from "@/services/bookingService";
-import { isSameDay } from "date-fns";
+import { format, isSameDay } from "date-fns";
 
 interface MedicalPackageDetailViewProps {
   packageData: MedicalPackageDetailDTO;
@@ -109,7 +109,7 @@ export default function MedicalPackageDetailView({
         });
       } else {
         await createSlot.mutateAsync({
-          date: formatDate(selectedDate),
+          date: format(selectedDate, 'yyyy-MM-dd'),
           shift: slotFormData.shift,
           medicalPackageId: packageData.medicalPackageId,
           maxQuantity: slotFormData.maxQuantity,
