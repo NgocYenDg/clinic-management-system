@@ -260,13 +260,18 @@ export default function Doctor() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
         {/* Queue Status Card - New */}
-        {wsConnected && departmentId && (
+        {
           <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <div
+                  className={`w-3 h-3 rounded-full animate-pulse ${
+                    wsConnected ? "bg-green-400" : "bg-gray-400"
+                  }`}
+                ></div>
                 <h3 className="text-lg font-semibold">
-                  Hàng đợi khám bệnh (Đã kết nối)
+                  Hàng đợi khám bệnh{" "}
+                  {wsConnected ? "(Đã kết nối)" : "(Đang kết nối...)"}
                 </h3>
               </div>
               <button
@@ -363,7 +368,7 @@ export default function Doctor() {
               </div>
             )}
           </div>
-        )}
+        }
 
         {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link
