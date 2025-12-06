@@ -255,6 +255,14 @@ class ExaminationFlowService {
   }
 
   /**
+   * Subscribe to reception queue updates
+   * @param onQueueUpdate Callback when queue is updated
+   */
+  subscribeToReceptionQueue(onQueueUpdate: MessageHandler): void {
+    this.subscribeToQueueBroadcast("reception", onQueueUpdate);
+  }
+
+  /**
    * Request to take the next item from the queue
    * @param queueId Queue ID (usually departmentId)
    */

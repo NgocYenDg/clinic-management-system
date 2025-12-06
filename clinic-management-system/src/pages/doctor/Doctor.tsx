@@ -17,6 +17,7 @@ import {
   examinationFlowService,
   QueueItemResponse,
 } from "../../services/examinationFlowService";
+import useExaminationService from "../../services/examinationService";
 import toast from "react-hot-toast";
 import useAuthService from "@/services/authService";
 import useStaffService from "@/services/staffService";
@@ -25,6 +26,7 @@ export default function Doctor() {
   const { account } = useAuthService();
   const staffId = account.data?.staffId;
   const { staff } = useStaffService({ staffId });
+  const { createResult } = useExaminationService();
 
   const [stats, setStats] = useState({
     todayAppointments: 0,
@@ -203,19 +205,37 @@ export default function Doctor() {
   };
 
   // Function to complete current patient
-  const handleCompletePatient = (
+  const handleCompletePatient = async (
     examId: string,
     serviceId: string,
-    data: string
+    data: any
   ) => {
     if (!currentQueueItem) {
       toast.error("Không có bệnh nhân đang khám");
       return;
     }
 
-    
-    toast.success("Đã hoàn thành khám bệnh");
-    setCurrentQueueItem(null);
+    if (!staffId) {
+      toast.error("Không tìm thấy thông tin bác sĩ");
+      return;
+    }
+
+    try {
+      await createResult.mutateAsync({
+        examId,
+        request: {
+          serviceId,
+          data,
+        },
+        staffId,
+      });
+      toast.success("Đã hoàn thành khám bệnh");
+      setCurrentQueueItem(null);
+      setFormData(null);
+    } catch (error) {
+      console.error("Error completing examination:", error);
+      toast.error("Lỗi khi hoàn thành khám bệnh");
+    }
   };
 
   // Fetch real-time stats
@@ -425,11 +445,7 @@ export default function Doctor() {
                                 handleCompletePatient(
                                   currentQueueItem.medicalForm.examination.id,
                                   currentQueueItem.requestedService.serviceId,
-                                  JSON.stringify({
-                                    completed: true,
-                                    timestamp: new Date().toISOString(),
-                                    formData: formData || {},
-                                  })
+                                  formData || {}
                                 );
                               } else {
                                 toast.error(
