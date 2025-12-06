@@ -213,17 +213,7 @@ export default function Doctor() {
       return;
     }
 
-    if (!examinationFlowService.isConnected()) {
-      toast.error("Chưa kết nối đến hàng đợi");
-      return;
-    }
-
-    examinationFlowService.completeItem(
-      currentQueueItem.queueItemId,
-      examId,
-      serviceId,
-      data
-    );
+    
     toast.success("Đã hoàn thành khám bệnh");
     setCurrentQueueItem(null);
   };
@@ -367,12 +357,25 @@ export default function Doctor() {
                         </span>
                       </div>
                       <div className="flex justify-between border-b border-white/5 pb-2">
+                        <span className="text-slate-400">Họ và tên:</span>
+                        <span className="text-white font-medium">
+                          {currentQueueItem.medicalForm?.examination
+                            ?.patientName || "Đang tải..."}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-b border-white/5 pb-2">
+                        <span className="text-slate-400">Số điện thoại:</span>
+                        <span className="text-white">
+                          {currentQueueItem.medicalForm?.examination
+                            ?.patientEmail || "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-b border-white/5 pb-2">
                         <span className="text-slate-400">Mã hồ sơ:</span>
                         <span className="text-white font-mono">
                           {currentQueueItem.medicalForm?.id || "N/A"}
                         </span>
                       </div>
-                      {/* Add more patient details here when available */}
                     </div>
                   </div>
                 </div>
@@ -402,17 +405,6 @@ export default function Doctor() {
                   <div className="min-h-[200px]">
                     {activeTab === "service" && (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="bg-black/20 rounded-lg p-4">
-                            <p className="text-slate-400 text-sm mb-1">
-                              Dịch vụ
-                            </p>
-                            <p className="font-medium text-lg">
-                              {currentQueueItem.requestedService?.name}
-                            </p>
-                          </div>
-                        </div>
-
                         {/* Form Template Placeholder */}
                         <div className="bg-white rounded-lg p-4 min-h-[400px]">
                           <iframe

@@ -11,8 +11,10 @@ export interface QueueItemDetails {
     examination?: {
       id: string;
       patientId: string;
-      appointmentId: string;
-      status: string;
+      patientName?: string;
+      patientEmail?: string;
+      appointmentId?: string;
+      status?: string;
       // Add other exam details as needed
     };
     medicalFormStatus: string;
@@ -268,37 +270,6 @@ class ExaminationFlowService {
     });
 
     console.log("Requested next item from queue:", queueId);
-  }
-
-  /**
-   * Complete the current queue item
-   * @param queueItemId Queue Item ID
-   * @param examId Examination ID
-   * @param serviceId Service ID
-   * @param data Examination result data (JSON string)
-   */
-  completeItem(
-    queueItemId: string,
-    examId: string,
-    serviceId: string,
-    data: string
-  ): void {
-    if (!this.client?.active) {
-      console.error("WebSocket not connected. Call connect() first.");
-      return;
-    }
-
-    this.client.publish({
-      destination: "/app/exam-workflow/item/complete",
-      body: JSON.stringify({
-        queueItemId,
-        examId,
-        serviceId,
-        data,
-      }),
-    });
-
-    console.log("Completed queue item:", queueItemId);
   }
 
   /**
