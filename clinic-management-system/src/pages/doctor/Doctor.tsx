@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import LogoutButton from "../../components/LogoutButton";
 import {
@@ -10,6 +10,8 @@ import {
   FaFileLines,
   FaPlus,
   FaHashtag,
+  FaBoxArchive,
+  FaClipboardList,
 } from "react-icons/fa6";
 import {
   examinationFlowService,
@@ -34,10 +36,58 @@ export default function Doctor() {
   const [queueSize, setQueueSize] = useState<number>(0);
   const [currentQueueItem, setCurrentQueueItem] =
     useState<QueueItemResponse | null>(null);
+  const [activeTab, setActiveTab] = useState("service");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [formData, setFormData] = useState<any>(null);
 
   // Extract doctor info from staff data
   const doctorName = staff.data?.name || "Doctor";
   const departmentId = staff.data?.departmentId || null;
+
+  // Handle messages from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === "rendererReady") {
+        // Send schema when renderer is ready
+        if (
+          currentQueueItem?.requestedService?.formTemplate &&
+          iframeRef.current?.contentWindow
+        ) {
+          iframeRef.current.contentWindow.postMessage(
+            {
+              type: "renderForm",
+              schema: currentQueueItem.requestedService.formTemplate,
+            },
+            "*"
+          );
+        }
+      } else if (event.data.type === "formChange") {
+        setFormData(event.data.data);
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [currentQueueItem]);
+
+  // Send schema when currentQueueItem changes and iframe is already loaded
+  useEffect(() => {
+    if (
+      currentQueueItem?.requestedService?.formTemplate &&
+      iframeRef.current?.contentWindow
+    ) {
+      // Small delay to ensure iframe is ready if it's just being mounted
+      setTimeout(() => {
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: "renderForm",
+            schema: currentQueueItem.requestedService!.formTemplate,
+          },
+          "*"
+        );
+      }, 500);
+    }
+  }, [currentQueueItem, activeTab]);
 
   // Connect to ExaminationFlow WebSocket
   useEffect(() => {
@@ -60,7 +110,8 @@ export default function Doctor() {
 
         // Connect to WebSocket
         examinationFlowService.connect(
-          tokens.token,
+          // tokens.token,
+          staffId!,
           () => {
             console.log("Successfully connected to ExaminationFlow WebSocket");
             setWsConnected(true);
@@ -84,6 +135,7 @@ export default function Doctor() {
             // Subscribe to errors
             examinationFlowService.subscribeToErrors((error: string) => {
               console.error("Queue error:", error);
+              toast.error(error);
             });
 
             // Get in-progress item if any
@@ -276,7 +328,12 @@ export default function Doctor() {
               </div>
               <button
                 onClick={handleTakeNextPatient}
-                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                disabled={!wsConnected || !!currentQueueItem}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                  !wsConnected || !!currentQueueItem
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-cyan-500 hover:bg-cyan-600 text-white"
+                }`}
               >
                 <FaUserInjured className="w-4 h-4" />
                 <span>Lấy bệnh nhân tiếp theo</span>
@@ -288,83 +345,115 @@ export default function Doctor() {
                 <p className="text-sm text-slate-400">Số bệnh nhân đang chờ</p>
                 <p className="text-2xl font-bold text-cyan-400">{queueSize}</p>
               </div>
-
-              <div className="bg-white/5 rounded-lg p-4">
-                <p className="text-sm text-slate-400">Bệnh nhân hiện tại</p>
-                <p className="text-sm font-medium text-white">
-                  {currentQueueItem ? "Đang khám" : "Không có"}
-                </p>
-              </div>
             </div>
 
-            {/* Current Patient Details */}
+            {/* Current Patient & Package Info */}
             {currentQueueItem && (
-              <div className="mt-4 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-blue-400 mb-2">
-                  Thông tin bệnh nhân hiện tại
-                </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Mã hàng đợi:</span>
-                    <span className="text-white font-mono">
-                      {currentQueueItem.queueItemId}
-                    </span>
-                  </div>
-                  {currentQueueItem.medicalForm && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Mã hồ sơ y tế:</span>
+              <div className="mt-6 space-y-6">
+                {/* Top Panel: Patient & Package Info */}
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Patient Info */}
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-400">
+                      <FaUserInjured />
+                      Thông tin bệnh nhân
+                    </h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between border-b border-white/5 pb-2">
+                        <span className="text-slate-400">Mã bệnh nhân:</span>
                         <span className="text-white font-mono">
-                          {currentQueueItem.medicalForm.id}
+                          {currentQueueItem.medicalForm?.examination
+                            ?.patientId || "N/A"}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Trạng thái:</span>
-                        <span className="text-white">
-                          {currentQueueItem.medicalForm.medicalFormStatus}
+                      <div className="flex justify-between border-b border-white/5 pb-2">
+                        <span className="text-slate-400">Mã hồ sơ:</span>
+                        <span className="text-white font-mono">
+                          {currentQueueItem.medicalForm?.id || "N/A"}
                         </span>
                       </div>
-                    </>
-                  )}
-                  {currentQueueItem.requestedService && (
-                    <>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Dịch vụ:</span>
-                        <span className="text-white">
-                          {currentQueueItem.requestedService.name}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Độ ưu tiên:</span>
-                        <span className="text-white">
-                          {currentQueueItem.requestedService.processingPriority}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                      {/* Add more patient details here when available */}
+                    </div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    if (
-                      currentQueueItem.medicalForm?.examination?.id &&
-                      currentQueueItem.requestedService?.serviceId
-                    ) {
-                      handleCompletePatient(
-                        currentQueueItem.medicalForm.examination.id,
-                        currentQueueItem.requestedService.serviceId,
-                        JSON.stringify({
-                          completed: true,
-                          timestamp: new Date().toISOString(),
-                        })
-                      );
-                    } else {
-                      toast.error("Thiếu thông tin để hoàn thành khám bệnh");
-                    }
-                  }}
-                  className="mt-4 w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
-                >
-                  Hoàn thành khám bệnh
-                </button>
+
+                {/* Bottom Panel: Service Tabs */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+                  {/* Tabs Header */}
+                  <div className="flex space-x-6 border-b border-white/10 mb-6">
+                    <button
+                      className={`pb-3 px-2 font-medium transition-colors relative flex items-center gap-2 ${
+                        activeTab === "service"
+                          ? "text-cyan-400"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                      onClick={() => setActiveTab("service")}
+                    >
+                      <FaClipboardList />
+                      {currentQueueItem.requestedService?.name ||
+                        "Dịch vụ khám"}
+                      {activeTab === "service" && (
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-400" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  <div className="min-h-[200px]">
+                    {activeTab === "service" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="bg-black/20 rounded-lg p-4">
+                            <p className="text-slate-400 text-sm mb-1">
+                              Dịch vụ
+                            </p>
+                            <p className="font-medium text-lg">
+                              {currentQueueItem.requestedService?.name}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Form Template Placeholder */}
+                        <div className="bg-white rounded-lg p-4 min-h-[400px]">
+                          <iframe
+                            ref={iframeRef}
+                            src="/formio-renderer.html"
+                            className="w-full h-full min-h-[400px] border-0"
+                            title="Medical Form"
+                          />
+                        </div>
+
+                        <div className="flex justify-end pt-4">
+                          <button
+                            onClick={() => {
+                              if (
+                                currentQueueItem.medicalForm?.examination?.id &&
+                                currentQueueItem.requestedService?.serviceId
+                              ) {
+                                handleCompletePatient(
+                                  currentQueueItem.medicalForm.examination.id,
+                                  currentQueueItem.requestedService.serviceId,
+                                  JSON.stringify({
+                                    completed: true,
+                                    timestamp: new Date().toISOString(),
+                                    formData: formData || {},
+                                  })
+                                );
+                              } else {
+                                toast.error(
+                                  "Thiếu thông tin để hoàn thành khám bệnh"
+                                );
+                              }
+                            }}
+                            className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors shadow-lg shadow-green-500/20"
+                          >
+                            Hoàn thành khám bệnh
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
