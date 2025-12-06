@@ -16,7 +16,7 @@ export const usePatientService = () => {
       queryKey: ["patient", id],
       queryFn: async () => {
         if (!id) return null;
-        const response = await axiosInstance.get<Patient>(`/api/patient/${id}`);
+        const response = await axiosInstance.get<Patient>(`/patient/${id}`);
         return response.data;
       },
       enabled: !!id,

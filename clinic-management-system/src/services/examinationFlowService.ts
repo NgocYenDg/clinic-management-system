@@ -341,7 +341,7 @@ export const useExaminationFlowService = () => {
       axiosInstance
         .post<{
           appointmentId: string;
-        }>("/api/medical-form", args)
+        }>("/medical-form", args)
         .then((res) => res.data),
   });
 

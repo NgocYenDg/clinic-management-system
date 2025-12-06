@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 import {
   FaMoneyBillWave,
   FaCreditCard,
-  FaUser,
   FaFileInvoiceDollar,
   FaCheckCircle,
   FaSpinner,
@@ -26,10 +25,6 @@ export default function BillingDashboard() {
   const { staff } = useStaffService({ staffId });
   const receptionistName = staff.data?.name || "Receptionist";
 
-  const [queueItems, setQueueItems] = useState<QueueItemResponse[]>([]);
-  const [selectedItem, setSelectedItem] = useState<QueueItemResponse | null>(
-    null
-  );
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "VNPAY">("CASH");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -146,9 +141,9 @@ export default function BillingDashboard() {
   };
 
   const handlePayment = async () => {
-    if (!selectedItem || !staffId) return;
+    if (!currentQueueItem || !staffId) return;
 
-    const invoiceId = selectedItem.medicalForm?.invoice?.invoiceId;
+    const invoiceId = currentQueueItem.medicalForm?.invoice?.invoiceId;
     if (!invoiceId) {
       toast.error("Không tìm thấy thông tin hóa đơn");
       return;
@@ -165,10 +160,10 @@ export default function BillingDashboard() {
       });
 
       if (paymentMethod === "VNPAY" && response.paymentUrl) {
-        window.location.href = response.paymentUrl;
+        window.open(response.paymentUrl, '_blank');
       } else {
         toast.success("Thanh toán thành công!");
-        setSelectedItem(null);
+        setCurrentQueueItem(null);
         // Refresh queue or wait for WebSocket update
       }
     } catch (error) {
@@ -220,7 +215,7 @@ export default function BillingDashboard() {
                 }`}
               ></div>
               <h3 className="text-lg font-semibold">
-                Hàng đợi khám bệnh{" "}
+                Hàng đợi thanh toán{" "}
                 {wsConnected ? "(Đã kết nối)" : "(Đang kết nối...)"}
               </h3>
             </div>
@@ -306,11 +301,76 @@ export default function BillingDashboard() {
                     </div>
                   </div>
                 </div>
+
+                {/* Payment Section */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-green-400">
+                    <FaMoneyBillWave />
+                    Thanh toán
+                  </h3>
+
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-slate-300 mb-3">
+                      Phương thức thanh toán
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setPaymentMethod("CASH")}
+                        className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
+                          paymentMethod === "CASH"
+                            ? "bg-blue-500/20 border-blue-500 text-blue-400"
+                            : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                        }`}
+                      >
+                        <FaMoneyBillWave className="w-6 h-6" />
+                        <span className="font-medium">Tiền mặt</span>
+                      </button>
+                      <button
+                        onClick={() => setPaymentMethod("VNPAY")}
+                        className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${
+                          paymentMethod === "VNPAY"
+                            ? "bg-blue-500/20 border-blue-500 text-blue-400"
+                            : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                        }`}
+                      >
+                        <FaCreditCard className="w-6 h-6" />
+                        <span className="font-medium">VNPAY</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl mb-6">
+                    <span className="text-slate-300">Tổng thanh toán:</span>
+                    <span className="text-2xl font-bold text-white">
+                      {formatCurrency(
+                        currentQueueItem.medicalForm?.invoice?.totalAmount || 0
+                      )}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={handlePayment}
+                    disabled={isProcessing}
+                    className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheckCircle />
+                        Xác nhận thanh toán
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          
+
         </div>
       </main>
     </div>

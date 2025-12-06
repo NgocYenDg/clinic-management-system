@@ -99,7 +99,7 @@ axiosInstance.interceptors.response.use(
 
         // Request new token using refresh token
         const response = await axios.post(
-          `/api/auth/refresh`,
+          `/auth/refresh`,
           { refreshToken },
           {
             baseURL: axiosInstance.defaults.baseURL,

@@ -20,7 +20,7 @@ const useBookingService = ({
       axiosInstance
         .post<{
           bookingId: string;
-        }>("/api/booking", args)
+        }>("/booking", args)
         .then((res) => res.data),
   });
 
@@ -31,7 +31,7 @@ const useBookingService = ({
       return axiosInstance
         .get<{
           bookingStatus: IBookingStatus;
-        }>(`/api/booking/${bookingId}/status`)
+        }>(`/booking/${bookingId}/status`)
         .then((res) => res.data);
     },
     enabled: !!bookingId,
@@ -43,7 +43,7 @@ const useBookingService = ({
     queryKey: ["slots", medicalPackageId],
     queryFn: () =>
       axiosInstance
-        .get<Pagination<ISlot>>("/api/slot", {
+        .get<Pagination<ISlot>>("/slot", {
           params: { medicalPackageId },
         })
         .then((res) => res.data),
@@ -55,7 +55,7 @@ const useBookingService = ({
       axiosInstance
         .post<{
           slotId: string;
-        }>("/api/slot", args)
+        }>("/slot", args)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slots"] });
@@ -71,7 +71,7 @@ const useBookingService = ({
       maxQuantity: number;
     }) =>
       axiosInstance
-        .patch(`/api/slot/${slotId}`, { maxQuantity })
+        .patch(`/slot/${slotId}`, { maxQuantity })
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["slots"] });
@@ -83,7 +83,7 @@ const useBookingService = ({
     queryKey: ["appointments", appointmentsParams],
     queryFn: () =>
       axiosInstance
-        .get<Pagination<IAppointment>>("/api/appointments", {
+        .get<Pagination<IAppointment>>("/appointments", {
           params: appointmentsParams,
         })
         .then((res) => res.data),
@@ -94,7 +94,7 @@ const useBookingService = ({
     queryKey: ["appointment", appointmentId],
     queryFn: () =>
       axiosInstance
-        .get<IAppointmentDetails>(`/api/appointments/${appointmentId}`)
+        .get<IAppointmentDetails>(`/appointments/${appointmentId}`)
         .then((res) => res.data),
     enabled: !!appointmentId,
   });
@@ -105,7 +105,7 @@ const useBookingService = ({
       axiosInstance
         .post<{
           appointmentId: string;
-        }>("/api/appointments", args)
+        }>("/appointments", args)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -122,7 +122,7 @@ const useBookingService = ({
       state: AppointmentState;
     }) =>
       axiosInstance
-        .patch(`/api/appointments/${appointmentId}`, state)
+        .patch(`/appointments/${appointmentId}`, state)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
@@ -132,7 +132,7 @@ const useBookingService = ({
 
   const deleteAppointment = useMutation({
     mutationFn: (appointmentId: string) =>
-      axiosInstance.delete(`/api/appointments/${appointmentId}`),
+      axiosInstance.delete(`/appointments/${appointmentId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       queryClient.invalidateQueries({ queryKey: ["slots"] });

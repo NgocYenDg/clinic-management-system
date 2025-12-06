@@ -20,7 +20,7 @@ const useAIService = () => {
   const sendMessage = useMutation({
     mutationFn: (args: IChatRequest) =>
       axiosInstance
-        .post<IChatResponse>("/api/ai/chat", args)
+        .post<IChatResponse>("/ai/chat", args)
         .then((res) => res.data),
   });
 

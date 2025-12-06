@@ -20,7 +20,7 @@ const useMedicalPackageService = (params?: {
     queryKey: ["medical-packages", medicalPackagesParams],
     queryFn: () =>
       axiosInstance
-        .get<Pagination<IMedicalPackage>>("/api/medical-package", {
+        .get<Pagination<IMedicalPackage>>("/medical-package", {
           params: medicalPackagesParams,
         })
         .then((res) => res.data),
@@ -31,7 +31,7 @@ const useMedicalPackageService = (params?: {
     queryKey: ["medical-package", medicalPackageId],
     queryFn: () =>
       axiosInstance
-        .get<MedicalPackageDetailDTO>(`/api/medical-package/${medicalPackageId}`)
+        .get<MedicalPackageDetailDTO>(`/medical-package/${medicalPackageId}`)
         .then((res) => res.data),
     enabled: !!medicalPackageId,
   });
@@ -40,7 +40,7 @@ const useMedicalPackageService = (params?: {
     queryKey: ["medical-services", medicalServicesParams],
     queryFn: () =>
       axiosInstance
-        .get<Pagination<MedicalServiceDTO>>("/api/medical-service", {
+        .get<Pagination<MedicalServiceDTO>>("/medical-service", {
           params: medicalServicesParams,
         })
         .then((res) => res.data),
@@ -51,7 +51,7 @@ const useMedicalPackageService = (params?: {
     queryKey: ["medical-service", medicalServiceId],
     queryFn: () =>
       axiosInstance
-        .get<MedicalServiceDTO>(`/api/medical-service/${medicalServiceId}`)
+        .get<MedicalServiceDTO>(`/medical-service/${medicalServiceId}`)
         .then((res) => res.data),
     enabled: !!medicalServiceId,
   });
@@ -60,7 +60,7 @@ const useMedicalPackageService = (params?: {
   const createMedicalPackage = useMutation({
     mutationFn: (request: CreateMedicalPackageRequest) =>
       axiosInstance
-        .post<{ medicalPackageId: string }>("/api/medical-package", request)
+        .post<{ medicalPackageId: string }>("/medical-package", request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
@@ -70,7 +70,7 @@ const useMedicalPackageService = (params?: {
   const createMedicalService = useMutation({
     mutationFn: (request: CreateMedicalServiceRequest) =>
       axiosInstance
-        .post<{ medicalServiceId: string }>("/api/medical-service", request)
+        .post<{ medicalServiceId: string }>("/medical-service", request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-services"] });
@@ -86,7 +86,7 @@ const useMedicalPackageService = (params?: {
       request: UpdateMedicalPackageInfoRequest;
     }) =>
       axiosInstance
-        .put(`/api/medical-package/${id}`, request)
+        .put(`/medical-package/${id}`, request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
@@ -103,7 +103,7 @@ const useMedicalPackageService = (params?: {
       request: UpdateMedicalPackagePriceRequest;
     }) =>
       axiosInstance
-        .patch(`/api/medical-package/${id}`, request)
+        .patch(`/medical-package/${id}`, request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
@@ -113,7 +113,7 @@ const useMedicalPackageService = (params?: {
 
   const deleteMedicalPackage = useMutation({
     mutationFn: (id: string) =>
-      axiosInstance.delete(`/api/medical-package/${id}`).then((res) => res.data),
+      axiosInstance.delete(`/medical-package/${id}`).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-packages"] });
     },
@@ -128,7 +128,7 @@ const useMedicalPackageService = (params?: {
       request: UpdateMedicalServiceRequest;
     }) =>
       axiosInstance
-        .put(`/api/medical-service/${id}`, request)
+        .put(`/medical-service/${id}`, request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-services"] });
@@ -138,7 +138,7 @@ const useMedicalPackageService = (params?: {
 
   const deleteMedicalService = useMutation({
     mutationFn: (id: string) =>
-      axiosInstance.delete(`/api/medical-service/${id}`).then((res) => res.data),
+      axiosInstance.delete(`/medical-service/${id}`).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medical-services"] });
     },

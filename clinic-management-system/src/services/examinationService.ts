@@ -41,7 +41,7 @@ const useExaminationService = ({
     queryKey: ["examinations", searchParams],
     queryFn: () =>
       axiosInstance
-        .get<ExamsPagedDto>("/api/examination", {
+        .get<ExamsPagedDto>("/examination", {
           params: searchParams,
         })
         .then((res) => res.data),
@@ -52,7 +52,7 @@ const useExaminationService = ({
     queryKey: ["examination", examId],
     queryFn: () =>
       axiosInstance
-        .get<any>(`/api/examination/${examId}`)
+        .get<any>(`/examination/${examId}`)
         .then((res) => res.data),
     enabled: !!examId,
   });
@@ -67,7 +67,7 @@ const useExaminationService = ({
       request: CreateResultRequest;
       staffId: string;
     }) =>
-      axiosInstance.post(`/api/examination/${examId}/result`, request, {
+      axiosInstance.post(`/examination/${examId}/result`, request, {
         headers: {
           "Staff-Id": staffId,
         },

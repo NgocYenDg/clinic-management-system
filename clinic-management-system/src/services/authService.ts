@@ -16,7 +16,7 @@ const useAuthService = (params?: {
     queryKey: ["emailVerification", verificationId, code],
     queryFn: () => {
       return axiosInstance
-        .get<string>(`/api/auth/otp/email`, {
+        .get<string>(`/auth/otp/email`, {
           params: { verificationId, code },
         })
         .then((res) => res.data);
@@ -43,7 +43,7 @@ const useAuthService = (params?: {
         .post<{
           token: string;
           refreshToken: string;
-        }>("/api/auth/login", {
+        }>("/auth/login", {
           accountName,
           password,
         })
@@ -59,7 +59,7 @@ const useAuthService = (params?: {
     queryKey: ["me"],
     queryFn: () => {
       return axiosInstance
-        .get<IAccount>("/api/auth/me")
+        .get<IAccount>("/auth/me")
         .then((res) => res.data);
     },
     enabled: !!login.data?.token,

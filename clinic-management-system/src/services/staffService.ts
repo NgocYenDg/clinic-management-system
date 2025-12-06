@@ -19,7 +19,7 @@ const useStaffService = ({
   // Staff Mutations
   const createStaff = useMutation({
     mutationFn: (request: CreateStaffRequest) =>
-      axiosInstance.post<string>("/api/staff", request).then((res) => res.data),
+      axiosInstance.post<string>("/staff", request).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staffs"] });
     },
@@ -34,7 +34,7 @@ const useStaffService = ({
       request: UpdateStaffRequest;
     }) =>
       axiosInstance
-        .put<void>(`/api/staff/${staffId}`, request)
+        .put<void>(`/staff/${staffId}`, request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staffs"] });
@@ -51,7 +51,7 @@ const useStaffService = ({
       request: RequestDayOffsRequest;
     }) =>
       axiosInstance
-        .post<void>(`/api/staff/${staffId}/day-off`, request)
+        .post<void>(`/staff/${staffId}/day-off`, request)
         .then((res) => res.data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["staff", variables.staffId] });
@@ -62,7 +62,7 @@ const useStaffService = ({
   const deleteStaff = useMutation({
     mutationFn: (staffId: string) =>
       axiosInstance
-        .delete<void>(`/api/staff/${staffId}`)
+        .delete<void>(`/staff/${staffId}`)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staffs"] });
@@ -73,7 +73,7 @@ const useStaffService = ({
   const createDepartment = useMutation({
     mutationFn: (request: CreateDepartmentRequest) =>
       axiosInstance
-        .post<{ departmentId: string }>("/api/department", request)
+        .post<{ departmentId: string }>("/department", request)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
@@ -85,7 +85,7 @@ const useStaffService = ({
     queryKey: ["staffs", staffsParams],
     queryFn: () =>
       axiosInstance
-        .get<Pagination<Staff>>("/api/staff", {
+        .get<Pagination<Staff>>("/staff", {
           params: staffsParams,
         })
         .then((res) => res.data),
@@ -95,7 +95,7 @@ const useStaffService = ({
   const staff = useQuery({
     queryKey: ["staff", staffId],
     queryFn: () =>
-      axiosInstance.get<Staff>(`/api/staff/${staffId}`).then((res) => res.data),
+      axiosInstance.get<Staff>(`/staff/${staffId}`).then((res) => res.data),
     enabled: !!staffId,
   });
 
@@ -103,7 +103,7 @@ const useStaffService = ({
     queryKey: ["staffSchedule", scheduleParams],
     queryFn: () =>
       axiosInstance
-        .get<Staff[]>("/api/staff/schedule", {
+        .get<Staff[]>("/staff/schedule", {
           params: scheduleParams,
         })
         .then((res) => res.data),
@@ -115,7 +115,7 @@ const useStaffService = ({
     queryKey: ["departments", departmentsParams],
     queryFn: () =>
       axiosInstance
-        .get<Pagination<Department>>("/api/department", {
+        .get<Pagination<Department>>("/department", {
           params: departmentsParams,
         })
         .then((res) => res.data),
@@ -126,7 +126,7 @@ const useStaffService = ({
     queryKey: ["department", departmentId],
     queryFn: () =>
       axiosInstance
-        .get<Department>(`/api/department/${departmentId}`)
+        .get<Department>(`/department/${departmentId}`)
         .then((res) => res.data),
     enabled: !!departmentId,
   });
