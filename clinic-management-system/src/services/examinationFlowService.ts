@@ -2,8 +2,6 @@ import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import SockJS from "sockjs-client";
 import { axiosInstance } from "./axios-instance";
-import { use } from "react";
-
 export interface QueueItemDetails {
   queueItemId: string;
   medicalForm?: {
@@ -17,6 +15,7 @@ export interface QueueItemDetails {
       status?: string;
       // Add other exam details as needed
     };
+    invoice?: InvoiceDetails;
     medicalFormStatus: string;
   };
   requestedService?: {
@@ -32,6 +31,17 @@ export interface QueueItemResponse {
   queueItemId: string;
   medicalForm?: QueueItemDetails["medicalForm"];
   requestedService?: QueueItemDetails["requestedService"];
+}
+
+export interface InvoiceDetails {
+  invoiceId: string;
+  patientId: string;
+  patientName: string;
+  patientEmail: string;
+  patientPhone: string;
+  medicalPackages: any[];
+  totalAmount: number;
+  status: string;
 }
 
 type MessageHandler = (message: any) => void;
