@@ -12,10 +12,6 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Doctor Prescription Pages
-import DoctorPrescriptions from "./pages/doctor/prescriptions/Prescriptions";
-import CreatePrescription from "./pages/doctor/prescriptions/CreatePrescription";
-import ViewPrescription from "./pages/doctor/prescriptions/ViewPrescription";
-import Medicines from "./pages/doctor/prescriptions/Medicines";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import BillingDashboard from "./pages/receptionist/billing/BillingDashboard";
 
