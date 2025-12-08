@@ -107,11 +107,19 @@ const usePaymentService = ({
     },
   });
 
+  const processPaymentResult = useMutation({
+    mutationFn: (params: Record<string, string>) =>
+      axiosInstance
+        .get("/payment/ipn", { params })
+        .then((res) => res.data),
+  });
+
   return {
     invoice,
     createTransaction,
     transaction,
     transactionStatus,
+    processPaymentResult,
   };
 };
 

@@ -1,15 +1,18 @@
+import useMedicalPackageService from "@/services/medicalPackageService";
+import useStaffService from "@/services/staffService";
 import { X, Save, Layout } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 
 interface MedicalServiceFormModalProps {
   isOpen: boolean;
   title: string;
-  formData: CreateMedicalServiceRequest;
+  formData: CreateMedicalServiceRequest | UpdateMedicalServiceRequest;
   isSubmitting: boolean;
-  departments: Department[];
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
-  onChange: (data: Partial<CreateMedicalServiceRequest>) => void;
+  onChange: (
+    data: Partial<CreateMedicalServiceRequest | UpdateMedicalServiceRequest>
+  ) => void;
 }
 
 export default function MedicalServiceFormModal({
@@ -17,14 +20,15 @@ export default function MedicalServiceFormModal({
   title,
   formData,
   isSubmitting,
-  departments,
   onClose,
   onSubmit,
   onChange,
 }: MedicalServiceFormModalProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isIframeReady, setIsIframeReady] = useState(false);
-
+  const { departments } = useStaffService({
+    departmentsParams: { size: 1000 },
+  });
   const getFormSchema = () => {
     try {
       return formData.formTemplate
@@ -45,33 +49,39 @@ export default function MedicalServiceFormModal({
     if (!isOpen) return;
 
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'formio-ready') {
+      if (event.data.type === "formio-ready") {
         setIsIframeReady(true);
         // Send initial schema to iframe
         const schema = getFormSchema();
-        iframeRef.current?.contentWindow?.postMessage({
-          type: 'formio-init',
-          schema: schema
-        }, '*');
-      } else if (event.data.type === 'formio-schema-change') {
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: "formio-init",
+            schema: schema,
+          },
+          "*"
+        );
+      } else if (event.data.type === "formio-schema-change") {
         handleBuilderChange(event.data.schema);
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, [isOpen, formData.formTemplate]);
 
   // Update iframe when formTemplate changes externally
   useEffect(() => {
     if (!isOpen) return;
-    
+
     if (isIframeReady && iframeRef.current) {
       const schema = getFormSchema();
-      iframeRef.current.contentWindow?.postMessage({
-        type: 'formio-init',
-        schema: schema
-      }, '*');
+      iframeRef.current.contentWindow?.postMessage(
+        {
+          type: "formio-init",
+          schema: schema,
+        },
+        "*"
+      );
     }
   }, [isOpen, formData.formTemplate, isIframeReady]);
 
@@ -156,7 +166,7 @@ export default function MedicalServiceFormModal({
                   <option className="text-black" value="">
                     -- Chọn phòng ban --
                   </option>
-                  {departments.map((dept) => (
+                  {departments.data?.content.map((dept) => (
                     <option
                       key={dept.id}
                       className="text-black"

@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Doctor Prescription Pages
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import BillingDashboard from "./pages/receptionist/billing/BillingDashboard";
+import PaymentResult from "./pages/receptionist/billing/PaymentResult";
 
 const queryClient = new QueryClient();
 function App() {
@@ -78,6 +79,15 @@ function App() {
           element={
             <ProtectedRoute requiredRole="RECEPTIONIST">
               <BillingDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/receptionist/billing/payment-result"
+          element={
+            <ProtectedRoute requiredRole="RECEPTIONIST">
+              <PaymentResult />
             </ProtectedRoute>
           }
         />

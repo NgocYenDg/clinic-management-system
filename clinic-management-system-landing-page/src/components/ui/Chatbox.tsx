@@ -9,10 +9,11 @@ const Chatbox = () => {
     const [messages, setMessages] = useState<IChatMessage[]>([
         {
             role: 'assistant',
-            content: 'Xin chào! Tôi là trợ lý AI của phòng khám. Tôi có thể giúp gì cho bạn?'
+            content: 'Xin chào! Tôi có thể giúp bạn tìm hiểu về các gói khám, kiểm tra lịch trống và đặt lịch hẹn. Bạn cần hỗ trợ gì hôm nay'
         }
     ])
     const [inputMessage, setInputMessage] = useState('')
+    const [sessionId, setSessionId] = useState<string | undefined>(undefined)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const { sendMessage } = useAIService()
 
@@ -38,12 +39,16 @@ const Chatbox = () => {
         try {
             const response = await sendMessage.mutateAsync({
                 message: inputMessage,
-                history: messages
+                session_id: sessionId
             })
+
+            if (response.session_id) {
+                setSessionId(response.session_id)
+            }
 
             const assistantMessage: IChatMessage = {
                 role: 'assistant',
-                content: response.message
+                content: response.response
             }
 
             setMessages(prev => [...prev, assistantMessage])
@@ -65,12 +70,12 @@ const Chatbox = () => {
             {!isOpen && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl"
+                    className="bg-primary fixed right-6 bottom-6 z-50 flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl"
                     aria-label="Open chat"
                 >
                     <div className="relative">
                         <Stethoscope className="h-8 w-8" />
-                        <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs">
+                        <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs">
                             <MessageCircle size={12} />
                         </div>
                     </div>
@@ -79,9 +84,9 @@ const Chatbox = () => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-[400px] flex-col rounded-2xl bg-white shadow-2xl">
+                <div className="fixed right-6 bottom-6 z-50 flex h-[600px] w-[400px] flex-col rounded-2xl bg-white shadow-2xl">
                     {/* Header */}
-                    <div className="flex items-center justify-between rounded-t-2xl bg-primary p-4 text-white">
+                    <div className="bg-primary flex items-center justify-between rounded-t-2xl p-4 text-white">
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
                                 <Stethoscope className="h-6 w-6" />
@@ -101,15 +106,10 @@ const Chatbox = () => {
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                    <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-4">
                         {messages.map((message, index) => (
-                            <div
-                                key={index}
-                                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                            >
-                                <div
-                                    className={`flex max-w-[80%] gap-2 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                                >
+                            <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`flex max-w-[80%] gap-2 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                                     <div
                                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                                             message.role === 'user' ? 'bg-primary' : 'bg-gray-300'
@@ -123,14 +123,10 @@ const Chatbox = () => {
                                     </div>
                                     <div
                                         className={`rounded-2xl px-4 py-2 ${
-                                            message.role === 'user'
-                                                ? 'bg-primary text-white'
-                                                : 'bg-white text-gray-800 shadow-sm'
+                                            message.role === 'user' ? 'bg-primary text-white' : 'bg-white text-gray-800 shadow-sm'
                                         }`}
                                     >
-                                        <p className="whitespace-pre-wrap text-sm break-word">
-                                            {message.content}
-                                        </p>
+                                        <p className="break-word text-sm whitespace-pre-wrap">{message.content}</p>
                                     </div>
                                 </div>
                             </div>
@@ -161,13 +157,13 @@ const Chatbox = () => {
                                 onChange={e => setInputMessage(e.target.value)}
                                 onKeyPress={handleKeyPress}
                                 placeholder="Nhập tin nhắn..."
-                                className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                className="focus:border-primary focus:ring-primary/20 flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:outline-none"
                                 disabled={sendMessage.isPending}
                             />
                             <button
                                 onClick={handleSendMessage}
                                 disabled={!inputMessage.trim() || sendMessage.isPending}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition-all hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="bg-primary hover:bg-primary/90 flex h-10 w-10 items-center justify-center rounded-full text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Send message"
                             >
                                 <Send size={18} />

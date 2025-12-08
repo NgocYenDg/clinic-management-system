@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 const useMedicalPackageService = () => {
     const medicalPackages = useQuery({
         queryKey: ['medical-packages'],
-        queryFn: () => axiosInstance.get<Pagination<IMedicalPackage>>('/api/medical-package').then(res => res.data)
+        queryFn: () => axiosInstance.get<Pagination<IMedicalPackage>>('/medical-package').then(res => res.data)
     })
 
     return {

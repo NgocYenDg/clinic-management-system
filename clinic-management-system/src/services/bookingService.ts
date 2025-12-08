@@ -6,11 +6,13 @@ const useBookingService = ({
   bookingId,
   appointmentId,
   appointmentsParams,
+  slotsParams,
 }: {
   medicalPackageId?: string;
   bookingId?: string;
   appointmentId?: string;
   appointmentsParams?: ISearchAppointmentsParams;
+  slotsParams?: { size?: number; page?: number };
 }) => {
   const queryClient = useQueryClient();
 
@@ -40,11 +42,11 @@ const useBookingService = ({
 
   // Slots queries
   const slots = useQuery({
-    queryKey: ["slots", medicalPackageId],
+    queryKey: ["slots", medicalPackageId, slotsParams],
     queryFn: () =>
       axiosInstance
         .get<Pagination<ISlot>>("/slot", {
-          params: { medicalPackageId },
+          params: { size: 5, ...slotsParams, medicalPackageId },
         })
         .then((res) => res.data),
     enabled: !!medicalPackageId,
@@ -84,7 +86,7 @@ const useBookingService = ({
     queryFn: () =>
       axiosInstance
         .get<Pagination<IAppointment>>("/appointments", {
-          params: appointmentsParams,
+          params: { size: 5, ...appointmentsParams },
         })
         .then((res) => res.data),
     enabled: !!appointmentsParams,

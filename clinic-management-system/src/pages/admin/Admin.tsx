@@ -63,6 +63,7 @@ export default function Admin() {
     updateStaff,
     deleteStaff,
     createDepartment,
+    deleteDepartment,
   } = useStaffService({
     staffsParams:
       activeTab === "staff"
@@ -82,10 +83,15 @@ export default function Admin() {
   });
 
   // Fetch medical packages and services
+  const [currentMedicalServiceId, setCurrentMedicalServiceId] = useState<
+    string | null
+  >(null);
   const {
     medicalPackages,
     medicalPackage,
     medicalServices,
+    medicalService,
+    getMedicalService,
     createMedicalPackage,
     createMedicalService,
     updateMedicalPackageInfo,
@@ -110,6 +116,7 @@ export default function Admin() {
           }
         : { page: 1 },
     medicalPackageId: selectedMedicalPackageId,
+    medicalServiceId: currentMedicalServiceId ?? undefined,
   });
 
   // Form state for create/edit staff
@@ -144,14 +151,15 @@ export default function Admin() {
     });
 
   // Form state for create/edit medical service
-  const [medicalServiceFormData, setMedicalServiceFormData] =
-    useState<CreateMedicalServiceRequest>({
-      name: "",
-      description: "",
-      departmentId: "",
-      processingPriority: 1,
-      formTemplate: "",
-    });
+  const [medicalServiceFormData, setMedicalServiceFormData] = useState<
+    CreateMedicalServiceRequest | UpdateMedicalServiceRequest
+  >({
+    name: "",
+    description: "",
+    departmentId: "",
+    processingPriority: 1,
+    formTemplate: "",
+  });
 
   // Staff handlers
   const handleCreateStaff = async (e: React.FormEvent) => {
@@ -222,8 +230,7 @@ export default function Admin() {
     if (!selectedDepartment) return;
 
     try {
-      // TODO: Add delete department mutation when API is ready
-      // await deleteDepartment.mutateAsync(selectedDepartment.id);
+      await deleteDepartment.mutateAsync(selectedDepartment.id);
       setShowDeleteModal(false);
       setSelectedDepartment(null);
       departments.refetch();
@@ -362,7 +369,6 @@ export default function Admin() {
         },
       });
       setShowEditModal(false);
-      setSelectedMedicalService(null);
       resetMedicalServiceForm();
       medicalServices.refetch();
     } catch (error) {
@@ -378,7 +384,8 @@ export default function Admin() {
         selectedMedicalService.medicalServiceId
       );
       setShowDeleteModal(false);
-      setSelectedMedicalService(null);
+      setCurrentMedicalServiceId(null);
+
       medicalServices.refetch();
     } catch (error) {
       console.error("Error deleting medical service:", error);
@@ -448,20 +455,25 @@ export default function Admin() {
     setSelectedMedicalPackageId(undefined);
   };
 
-  const openEditMedicalServiceModal = (service: MedicalServiceDTO) => {
-    setSelectedMedicalService(service);
-    setMedicalServiceFormData({
-      name: service.name,
-      description: service.description,
-      departmentId: service.departmentId,
-      processingPriority: service.processingPriority,
-      formTemplate: service.formTemplate || "",
-    });
-    setShowEditModal(true);
+  const openEditMedicalServiceModal = async (service: MedicalServiceDTO) => {
+    setCurrentMedicalServiceId(service.medicalServiceId);
+    try {
+      const serviceDetail = await getMedicalService(service.medicalServiceId);
+      setMedicalServiceFormData({
+        name: serviceDetail.name,
+        description: serviceDetail.description,
+        departmentId: serviceDetail.departmentId,
+        processingPriority: serviceDetail.processingPriority,
+        formTemplate: serviceDetail.formTemplate || "",
+      });
+      setShowEditModal(true);
+    } catch (error) {
+      console.error("Error fetching service detail:", error);
+    }
   };
 
   const openDeleteMedicalServiceModal = (service: MedicalServiceDTO) => {
-    setSelectedMedicalService(service);
+    setCurrentMedicalServiceId(service.medicalServiceId);
     setShowDeleteModal(true);
   };
 
@@ -770,14 +782,10 @@ export default function Admin() {
                   packageData={medicalPackage.data}
                   onBack={closeMedicalPackageDetailView}
                 />
-              ) : medicalPackages.isLoading || medicalPackages.isRefetching ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
-                </div>
               ) : (
                 <>
                   <MedicalPackageTable
-                    packages={medicalPackages.data?.content || []}
+                    packagesQuery={medicalPackages}
                     onEdit={openEditMedicalPackageModal}
                     onDelete={openDeleteMedicalPackageModal}
                     onViewDetail={openMedicalPackageDetailView}
@@ -830,7 +838,6 @@ export default function Admin() {
             formData={staffFormData}
             isSubmitting={createStaff.isPending}
             showEmailField={true}
-            departments={departments.data?.content || []}
             onClose={() => {
               setShowCreateModal(false);
               resetStaffForm();
@@ -845,7 +852,6 @@ export default function Admin() {
             formData={staffFormData}
             isSubmitting={updateStaff.isPending}
             showEmailField={false}
-            departments={departments.data?.content || []}
             onClose={() => {
               setShowEditModal(false);
               setSelectedStaff(null);
@@ -973,7 +979,6 @@ export default function Admin() {
             title="Tạo dịch vụ mới"
             formData={medicalServiceFormData}
             isSubmitting={createMedicalService.isPending}
-            departments={departments.data?.content || []}
             onClose={() => {
               setShowCreateModal(false);
               resetMedicalServiceForm();
@@ -983,14 +988,13 @@ export default function Admin() {
           />
 
           <MedicalServiceFormModal
-            isOpen={showEditModal && !!selectedMedicalService}
+            isOpen={showEditModal && !!currentMedicalServiceId}
             title="Chỉnh sửa dịch vụ"
             formData={medicalServiceFormData}
             isSubmitting={updateMedicalService.isPending}
-            departments={departments.data?.content || []}
             onClose={() => {
               setShowEditModal(false);
-              setSelectedMedicalService(null);
+              setCurrentMedicalServiceId(null);
               resetMedicalServiceForm();
             }}
             onSubmit={handleUpdateMedicalService}
@@ -1004,7 +1008,7 @@ export default function Admin() {
             onConfirm={handleDeleteMedicalService}
             onCancel={() => {
               setShowDeleteModal(false);
-              setSelectedMedicalService(null);
+              setCurrentMedicalServiceId(null);
             }}
           />
         </>

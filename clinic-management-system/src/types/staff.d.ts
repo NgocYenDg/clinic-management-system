@@ -63,10 +63,12 @@ declare global {
     sortBy?: string;
     sort?: "ASC" | "DESC";
     page?: number;
+    size?: number;
   }
 
   interface GetAllDepartmentsParams {
     page?: number;
+    size?: number;
     keyword?: string;
   }
 

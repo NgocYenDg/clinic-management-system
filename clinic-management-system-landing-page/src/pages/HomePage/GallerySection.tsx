@@ -25,11 +25,15 @@ const GallerySection = () => {
                 {medicalPackages.isLoading ? (
                     <div>Đang tải gói khám...</div>
                 ) : (
-                    <div className="grid grid-cols-3 gap-[30px] px-3">
+                    <div className="grid grid-cols-4 gap-4 px-3">
                         {medicalPackages.data?.content?.map(medicalPackage => (
                             <div key={medicalPackage.name} className="flex flex-col overflow-hidden rounded-3xl">
-                                <img src={medicalPackage.image ?? '/images/canlamsang.png'} alt={medicalPackage.name} className="aspect-8/5 bg-cover bg-center" />
-                                <div className="flex flex-1 flex-col gap-[26px] bg-white p-[35px]">
+                                <img
+                                    src={medicalPackage.image || '/images/canlamsang.png'}
+                                    alt={medicalPackage.name}
+                                    className="aspect-8/5 bg-cover bg-center"
+                                />
+                                <div className="flex flex-1 flex-col gap-4 bg-white p-4">
                                     <div>
                                         <p className="font-serif text-[25px] font-semibold text-balance">{medicalPackage.name}</p>
                                         <div className="mt-[15px] line-clamp-3 text-lg text-[#6E6E6E]">{medicalPackage.description}</div>

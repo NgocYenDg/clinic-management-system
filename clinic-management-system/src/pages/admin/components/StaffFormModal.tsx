@@ -1,3 +1,4 @@
+import useStaffService from "@/services/staffService";
 import { X, Save } from "lucide-react";
 
 interface StaffFormModalProps {
@@ -6,7 +7,6 @@ interface StaffFormModalProps {
   formData: CreateStaffRequest | UpdateStaffRequest;
   isSubmitting: boolean;
   showEmailField?: boolean;
-  departments?: Department[];
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
   onChange: (data: Partial<CreateStaffRequest | UpdateStaffRequest>) => void;
@@ -18,11 +18,13 @@ export default function StaffFormModal({
   formData,
   isSubmitting,
   showEmailField = true,
-  departments = [],
   onClose,
   onSubmit,
   onChange,
 }: StaffFormModalProps) {
+  const { departments } = useStaffService({
+    departmentsParams: { size: 1000 },
+  });
   if (!isOpen) return null;
 
   return (
@@ -154,7 +156,7 @@ export default function StaffFormModal({
               <option className="text-black" value="">
                 -- Chọn phòng ban --
               </option>
-              {departments.map((dept) => (
+              {departments.data?.content.map((dept) => (
                 <option key={dept.id} className="text-black" value={dept.id}>
                   {dept.name}
                 </option>

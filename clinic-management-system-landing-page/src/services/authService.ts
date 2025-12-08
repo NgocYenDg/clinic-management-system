@@ -6,7 +6,7 @@ const useAuthService = ({ verificationId, code }: { verificationId?: string; cod
         queryKey: ['emailVerification', verificationId, code],
         queryFn: () => {
             return axiosInstance
-                .get<string>(`/api/auth/otp/email`, {
+                .get<string>(`/auth/otp/email`, {
                     params: { verificationId, code }
                 })
                 .then(res => res.data)

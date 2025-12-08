@@ -65,12 +65,14 @@ declare global {
 
   interface GetMedicalPackagesParams {
     page?: number;
+    size?: number;
     keyword?: string;
     sort?: "ASC" | "DESC";
   }
 
   interface GetMedicalServicesParams {
     page?: number;
+    size?: number;
     keyword?: string;
   }
 }

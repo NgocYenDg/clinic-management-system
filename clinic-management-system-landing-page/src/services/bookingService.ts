@@ -7,7 +7,7 @@ const useBookingService = ({ medicalPackageId, bookingId }: { medicalPackageId?:
             axiosInstance
                 .post<{
                     bookingId: string
-                }>('/api/booking', args)
+                }>('/booking', args)
                 .then(res => res.data)
     })
     const bookingStatus = useQuery({
@@ -16,7 +16,7 @@ const useBookingService = ({ medicalPackageId, bookingId }: { medicalPackageId?:
             return axiosInstance
                 .get<{
                     bookingStatus: IBookingStatus
-                }>(`/api/booking/${bookingId}/status`)
+                }>(`/booking/${bookingId}/status`)
                 .then(res => res.data)
         },
         enabled: !!bookingId,
@@ -27,7 +27,7 @@ const useBookingService = ({ medicalPackageId, bookingId }: { medicalPackageId?:
         queryKey: ['slots', medicalPackageId],
         queryFn: () =>
             axiosInstance
-                .get<Pagination<ISlot>>('/api/slot', {
+                .get<Pagination<ISlot>>('/slot', {
                     params: { medicalPackageId }
                 })
                 .then(res => res.data),

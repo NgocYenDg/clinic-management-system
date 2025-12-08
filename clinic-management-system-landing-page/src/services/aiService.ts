@@ -8,18 +8,21 @@ export interface IChatMessage {
 
 export interface IChatRequest {
     message: string
-    history?: IChatMessage[]
+    session_id?: string
 }
  
 export interface IChatResponse {
-    message: string
+    response: string
+    suggested_actions?: string[]
+    session_id?: string
     timestamp: string
+    error?: string
 }
 
 const useAIService = () => {
     const sendMessage = useMutation({
         mutationFn: (args: IChatRequest) =>
-            axiosInstance.post<IChatResponse>('/api/ai/chat', args).then(res => res.data)
+            axiosInstance.post<IChatResponse>('/ai/chat', args).then(res => res.data)
     })
 
     return {

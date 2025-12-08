@@ -13,6 +13,7 @@ import {
   FaCreditCard,
   FaFileInvoiceDollar,
   FaCheckCircle,
+  FaTimesCircle,
   FaSpinner,
   FaArrowLeft,
   FaUserInjured,
@@ -27,8 +28,28 @@ export default function BillingDashboard() {
 
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "VNPAY">("CASH");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentTransactionId, setCurrentTransactionId] = useState<
+    string | undefined
+  >(undefined);
 
-  const { createTransaction } = usePaymentService();
+  const { createTransaction, transactionStatus } = usePaymentService({
+    transactionId: currentTransactionId,
+  });
+
+  // Monitor transaction status
+  // useEffect(() => {
+  //   if (currentTransactionId && transactionStatus.data) {
+  //     const status = transactionStatus.data.status;
+  //     if (status === "SUCCESS") {
+  //       toast.success("Thanh toán VNPAY thành công!");
+  //       setCurrentTransactionId(undefined);
+  //       setCurrentQueueItem(null);
+  //     } else if (status === "FAILED") {
+  //       toast.error("Thanh toán VNPAY thất bại!");
+  //       setCurrentTransactionId(undefined);
+  //     }
+  //   }
+  // }, [currentTransactionId, transactionStatus.data]);
 
   const [wsConnected, setWsConnected] = useState(false);
   const [queueSize, setQueueSize] = useState<number>(0);
@@ -47,11 +68,6 @@ export default function BillingDashboard() {
           console.warn("No authentication token found");
           return;
         }
-
-        const tokens = JSON.parse(tokensStr) as {
-          token: string;
-          refreshToken: string;
-        };
 
         // Connect to WebSocket
         examinationFlowService.connect(
@@ -160,7 +176,8 @@ export default function BillingDashboard() {
       });
 
       if (paymentMethod === "VNPAY" && response.paymentUrl) {
-        window.open(response.paymentUrl, '_blank');
+        window.open(response.paymentUrl, "_blank");
+        setCurrentTransactionId(response.transactionId);
       } else {
         toast.success("Thanh toán thành công!");
         setCurrentQueueItem(null);
@@ -369,10 +386,136 @@ export default function BillingDashboard() {
               </div>
             </div>
           )}
-
-
         </div>
       </main>
+
+      {/* Payment Status Overlay */}
+      {currentTransactionId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+            {transactionStatus.data?.status === "SUCCEEDED" ? (
+              <>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaCheckCircle className="w-8 h-8 text-green-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  Thanh toán thành công
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  Giao dịch đã được ghi nhận vào hệ thống.
+                </p>
+                <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4 text-sm text-left">
+                    <span className="block text-slate-500 mb-1">
+                      Trạng thái
+                    </span>
+                    <span className="block font-medium text-green-600">
+                      Thành công
+                    </span>
+                    <span className="block text-slate-500 mb-1">
+                      Mã giao dịch
+                    </span>
+                    <span className="block font-mono text-slate-700 break-all">
+                      {currentTransactionId}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setCurrentTransactionId(undefined);
+                    setCurrentQueueItem(null);
+                    toast.success("Đã hoàn tất thanh toán");
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-all text-sm font-medium"
+                >
+                  Hoàn tất
+                </button>
+              </>
+            ) : transactionStatus.data?.status === "FAILED" ? (
+              <>
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaTimesCircle className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  Thanh toán thất bại
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  Giao dịch không thành công hoặc đã bị hủy.
+                </p>
+                <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4 text-sm text-left">
+                    <span className="block text-slate-500 mb-1">
+                      Trạng thái
+                    </span>
+                    <span className="block font-medium text-red-600">
+                      Thất bại
+                    </span>
+                    <span className="block text-slate-500 mb-1">
+                      Mã giao dịch
+                    </span>
+                    <span className="block font-mono text-slate-700 break-all">
+                      {currentTransactionId}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setCurrentTransactionId(undefined);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white transition-all text-sm font-medium"
+                >
+                  Đóng
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaSpinner className="w-8 h-8 text-blue-500 animate-spin" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  Đang chờ thanh toán
+                </h3>
+                <p className="text-slate-500 mb-6">
+                  Vui lòng hoàn tất thanh toán trên cửa sổ VNPAY vừa mở. Hệ
+                  thống sẽ tự động cập nhật khi thanh toán hoàn tất.
+                </p>
+
+                <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4 text-sm text-left">
+                    <span className="block text-slate-500 mb-1">
+                      Trạng thái
+                    </span>
+                    <span className="block font-medium text-blue-600">
+                      {transactionStatus.data?.status === "PENDING"
+                        ? "Đang chờ..."
+                        : transactionStatus.data?.status || "Đang xử lý..."}
+                    </span>
+                    <span className="block text-slate-500 mb-1">
+                      Mã giao dịch
+                    </span>
+                    <span className="block font-mono text-slate-700 break-all">
+                      {currentTransactionId}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (
+                      confirm("Bạn có chắc muốn hủy theo dõi giao dịch này?")
+                    ) {
+                      setCurrentTransactionId(undefined);
+                    }
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 transition-all text-sm font-medium cursor-pointer"
+                >
+                  Hủy theo dõi
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

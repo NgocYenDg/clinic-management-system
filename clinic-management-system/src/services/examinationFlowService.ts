@@ -51,7 +51,7 @@ class ExaminationFlowService {
   private client: Client | null = null;
   private connected: boolean = false;
   private subscriptions: Map<string, StompSubscription> = new Map();
-  private baseUrl: string = "http://localhost:9093"; // ExaminationFlowService port
+  private baseUrl: string = import.meta.env.VITE_SOCKET_URL || ""; // ExaminationFlowService port
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private reconnectDelay: number = 3000;

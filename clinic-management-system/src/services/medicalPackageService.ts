@@ -21,7 +21,7 @@ const useMedicalPackageService = (params?: {
     queryFn: () =>
       axiosInstance
         .get<Pagination<IMedicalPackage>>("/medical-package", {
-          params: medicalPackagesParams,
+          params: { size: 5, ...medicalPackagesParams },
         })
         .then((res) => res.data),
     enabled: !!medicalPackagesParams,
@@ -41,7 +41,7 @@ const useMedicalPackageService = (params?: {
     queryFn: () =>
       axiosInstance
         .get<Pagination<MedicalServiceDTO>>("/medical-service", {
-          params: medicalServicesParams,
+          params: { size: 5, ...medicalServicesParams },
         })
         .then((res) => res.data),
     enabled: !!medicalServicesParams,
@@ -144,12 +144,18 @@ const useMedicalPackageService = (params?: {
     },
   });
 
+  const getMedicalService = (id: string) =>
+    axiosInstance
+      .get<MedicalServiceDTO>(`/medical-service/${id}`)
+      .then((res) => res.data);
+
   return {
     // Queries
     medicalPackages,
     medicalPackage,
     medicalServices,
     medicalService,
+    getMedicalService,
     // Mutations
     createMedicalPackage,
     createMedicalService,

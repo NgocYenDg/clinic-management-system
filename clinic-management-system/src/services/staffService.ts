@@ -80,13 +80,23 @@ const useStaffService = ({
     },
   });
 
+  // Department Mutations
+  const deleteDepartment = useMutation({
+    mutationFn: (departmentId: string) =>
+      axiosInstance
+        .delete<void>(`/department/${departmentId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["departments"] });
+    },
+  });
+
   // Staff Queries
   const staffs = useQuery({
     queryKey: ["staffs", staffsParams],
     queryFn: () =>
       axiosInstance
         .get<Pagination<Staff>>("/staff", {
-          params: staffsParams,
+          params: { size: 5, ...staffsParams },
         })
         .then((res) => res.data),
     enabled: !!staffsParams,
@@ -116,7 +126,7 @@ const useStaffService = ({
     queryFn: () =>
       axiosInstance
         .get<Pagination<Department>>("/department", {
-          params: departmentsParams,
+          params: { size: 5, ...departmentsParams },
         })
         .then((res) => res.data),
     enabled: !!departmentsParams,
@@ -138,6 +148,7 @@ const useStaffService = ({
     requestDayOff,
     deleteStaff,
     createDepartment,
+    deleteDepartment,
 
     // Queries
     staffs,

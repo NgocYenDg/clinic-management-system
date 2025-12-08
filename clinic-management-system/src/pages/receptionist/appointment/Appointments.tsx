@@ -33,9 +33,6 @@ export default function Appointments() {
   const [filterDateFrom, setFilterDateFrom] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
-  const [filterDateTo, setFilterDateTo] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -55,7 +52,7 @@ export default function Appointments() {
       keyword: searchKeyword || undefined,
       state: filterStatus !== "ALL" ? filterStatus : undefined,
       dateFrom: filterDateFrom || undefined,
-      dateTo: filterDateTo || undefined,
+      dateTo: filterDateFrom || undefined,
       sort: "DESC",
     },
     appointmentId: selectedAppointment?.id,
@@ -210,11 +207,21 @@ export default function Appointments() {
                 }
                 className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 appearance-none cursor-pointer"
               >
-                <option className="text-black" value="ALL">Tất cả</option>
-                <option className="text-black" value="CREATED">Đã tạo</option>
-                <option className="text-black" value="SHOWED">Đã đến</option>
-                <option className="text-black" value="CANCELED">Đã hủy</option>
-                <option className="text-black" value="NO_SHOWED">Không đến</option>
+                <option className="text-black" value="ALL">
+                  Tất cả
+                </option>
+                <option className="text-black" value="CREATED">
+                  Đã tạo
+                </option>
+                <option className="text-black" value="SHOWED">
+                  Đã đến
+                </option>
+                <option className="text-black" value="CANCELED">
+                  Đã hủy
+                </option>
+                <option className="text-black" value="NO_SHOWED">
+                  Không đến
+                </option>
               </select>
             </div>
 
@@ -223,13 +230,6 @@ export default function Appointments() {
                 type="date"
                 value={filterDateFrom}
                 onChange={(e) => setFilterDateFrom(e.target.value)}
-                className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              />
-              <span className="text-slate-400">đến</span>
-              <input
-                type="date"
-                value={filterDateTo}
-                onChange={(e) => setFilterDateTo(e.target.value)}
                 className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
             </div>
@@ -272,9 +272,6 @@ export default function Appointments() {
                         Gói khám
                       </th>
                       <th className="text-left py-3 px-4 text-slate-400 font-medium">
-                        Bác sĩ
-                      </th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
                         Trạng thái
                       </th>
                       <th className="text-right py-3 px-4 text-slate-400 font-medium">
@@ -307,7 +304,6 @@ export default function Appointments() {
                         <td className="py-4 px-4 text-slate-300">
                           {apt.medicalPackageName || "N/A"}
                         </td>
-                        <td className="py-4 px-4 text-slate-300">N/A</td>
                         <td className="py-4 px-4">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(

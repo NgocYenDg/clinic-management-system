@@ -42,7 +42,7 @@ const useExaminationService = ({
     queryFn: () =>
       axiosInstance
         .get<ExamsPagedDto>("/examination", {
-          params: searchParams,
+          params: { size: 5, ...searchParams },
         })
         .then((res) => res.data),
     enabled: !!searchParams,
