@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import usePaymentService from "../../../services/paymentService";
 import {
   FaCheckCircle,
@@ -11,7 +11,6 @@ import {
 
 export default function PaymentResult() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { processPaymentResult } = usePaymentService();
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"

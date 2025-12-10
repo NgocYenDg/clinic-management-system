@@ -1,15 +1,10 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import LogoutButton from "../../components/LogoutButton";
-import EmailVerificationStatus from "../../components/EmailVerificationStatus";
 import {
   Bell,
-  UserPlus,
   CalendarCheck,
   Calendar,
-  FileText,
-  FileDown,
-  Hash,
   DollarSign,
 } from "lucide-react";
 import useAuthService from "@/services/authService";
@@ -19,68 +14,9 @@ export default function Receptionist() {
   const { account } = useAuthService();
   const staffId = account.data?.staffId;
   const { staff } = useStaffService({ staffId });
-  const [appointments, setAppointments] = useState([]);
-  const [todayAppointments, setTodayAppointments] = useState(0);
-  const [todayPrescriptions, setTodayPrescriptions] = useState(0);
-  const [totalAppointments, setTotalAppointments] = useState(0);
+  const [todayAppointments] = useState(0);
+  const [totalAppointments] = useState(0);
 
-  // Fetch real appointment data
-  // useEffect(() => {
-  //   const appointmentsRef = collection(db, "appointments");
-  //   const q = query(appointmentsRef, orderBy("createdAt", "desc"));
-
-  //   const unsubscribe = onSnapshot(
-  //     q,
-  //     (snapshot) => {
-  //       const appointmentsData = snapshot.docs.map((doc) => ({
-  //         id: doc.id,
-  //         ...doc.data(),
-  //       }));
-  //       setAppointments(appointmentsData);
-
-  //       // Calculate today's appointments
-  //       const today = new Date().toISOString().split("T")[0];
-  //       const todayCount = appointmentsData.filter(
-  //         (apt) => apt.appointmentDate === today
-  //       ).length;
-  //       setTodayAppointments(todayCount);
-  //       setTotalAppointments(appointmentsData.length);
-  //     },
-  //     (error) => {
-  //       console.error("Error fetching appointments:", error);
-  //     }
-  //   );
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  // Fetch prescription data
-  // useEffect(() => {
-  //   const prescriptionsRef = collection(db, "prescriptions");
-  //   const q = query(prescriptionsRef, orderBy("createdAt", "desc"));
-
-  //   const unsubscribe = onSnapshot(
-  //     q,
-  //     (snapshot) => {
-  //       const prescriptionsData = snapshot.docs.map((doc) => ({
-  //         id: doc.id,
-  //         ...doc.data(),
-  //       }));
-
-  //       // Calculate today's prescriptions
-  //       const today = new Date().toISOString().split("T")[0];
-  //       const todayCount = prescriptionsData.filter(
-  //         (pres) => pres.prescriptionDate === today
-  //       ).length;
-  //       setTodayPrescriptions(todayCount);
-  //     },
-  //     (error) => {
-  //       console.error("Error fetching prescriptions:", error);
-  //     }
-  //   );
-
-  //   return () => unsubscribe();
-  // }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
@@ -161,10 +97,6 @@ export default function Receptionist() {
             <div>
               <p className="text-slate-400 text-sm">Họ và tên</p>
               <p className="text-white font-medium">{staff.data?.name}</p>
-            </div>
-            <div>
-              <p className="text-slate-400 text-sm">Email đã xác thực</p>
-              <EmailVerificationStatus />
             </div>
           </div>
         </div>

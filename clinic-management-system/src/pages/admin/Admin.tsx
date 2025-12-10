@@ -21,7 +21,6 @@ import DepartmentFormModal from "./components/DepartmentFormModal";
 import MedicalPackageFormModal from "./components/MedicalPackageFormModal";
 import MedicalServiceFormModal from "./components/MedicalServiceFormModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
-import UserInfoCard from "./components/UserInfoCard";
 import useStaffService from "../../services/staffService";
 import useMedicalPackageService from "../../services/medicalPackageService";
 import useAuthService from "@/services/authService";
@@ -47,7 +46,7 @@ export default function Admin() {
     useState<Department | null>(null);
   const [selectedMedicalPackage, setSelectedMedicalPackage] =
     useState<IMedicalPackage | null>(null);
-  const [selectedMedicalService, setSelectedMedicalService] =
+  const [selectedMedicalService, _setSelectedMedicalService] =
     useState<MedicalServiceDTO | null>(null);
   const [showMedicalPackageDetail, setShowMedicalPackageDetail] =
     useState(false);
@@ -90,7 +89,6 @@ export default function Admin() {
     medicalPackages,
     medicalPackage,
     medicalServices,
-    medicalService,
     getMedicalService,
     createMedicalPackage,
     createMedicalService,
@@ -821,12 +819,6 @@ export default function Admin() {
             </>
           )}
         </div>
-
-        {/* User Info Card */}
-        <UserInfoCard
-          currentUser={null}
-          userRole={account.data?.role?.toString() || null}
-        />
       </main>
 
       {/* Modals for Staff */}

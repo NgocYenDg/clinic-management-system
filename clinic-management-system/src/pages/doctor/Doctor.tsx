@@ -16,12 +16,6 @@ export default function Doctor() {
   const { staff } = useStaffService({ staffId });
   const { createResult } = useExaminationService();
 
-  const [stats, setStats] = useState({
-    todayAppointments: 0,
-    waitingPatients: 0,
-    weeklyPrescriptions: 0,
-    loading: true,
-  });
   const [wsConnected, setWsConnected] = useState(false);
   const [queueSize, setQueueSize] = useState<number>(0);
   const [currentQueueItem, setCurrentQueueItem] =
@@ -92,12 +86,6 @@ export default function Doctor() {
           console.warn("No authentication token found");
           return;
         }
-
-        const tokens = JSON.parse(tokensStr) as {
-          token: string;
-          refreshToken: string;
-        };
-
         // Connect to WebSocket
         examinationFlowService.connect(
           // tokens.token,

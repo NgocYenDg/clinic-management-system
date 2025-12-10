@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "./axios-instance";
 
 export interface MedicalPackageRepDto {
@@ -48,7 +48,6 @@ const usePaymentService = ({
   invoiceId?: string;
   transactionId?: string;
 } = {}) => {
-  const queryClient = useQueryClient();
 
   const invoice = useQuery({
     queryKey: ["invoice", invoiceId],

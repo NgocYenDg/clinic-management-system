@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import LogoutButton from "../../../components/LogoutButton";
@@ -10,8 +10,6 @@ import {
   Search,
   Filter,
   UserCheck,
-  Phone,
-  Mail,
   Clock,
   Check,
   AlertTriangle,

@@ -1,5 +1,5 @@
 import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import SockJS from "sockjs-client";
 import { axiosInstance } from "./axios-instance";
 export interface QueueItemDetails {
@@ -335,7 +335,6 @@ interface ICreateMedicalFormRequest {
 }
 
 export const useExaminationFlowService = () => {
-  const queryClient = useQueryClient();
   const createMedicalForm = useMutation({
     mutationFn: (args: ICreateMedicalFormRequest) =>
       axiosInstance

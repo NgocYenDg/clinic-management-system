@@ -25,18 +25,17 @@ export default function Login() {
     password: password,
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setIsLoading(true);
     setError("");
 
     try {
-      // Use Firebase authentication
       await login.refetch();
       const { data: accountData } = await account.refetch();
 
-      const userRole = accountData.role;
+      const userRole = accountData?.role;
 
       if (userRole === "ADMIN") {
         navigate("/admin");

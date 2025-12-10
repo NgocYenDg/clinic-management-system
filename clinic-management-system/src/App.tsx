@@ -4,11 +4,7 @@ import Login from "./pages/auth/Login";
 import Admin from "./pages/admin/Admin";
 import Doctor from "./pages/doctor/Doctor";
 import Receptionist from "./pages/receptionist/Receptionist";
-import DoctorAppointments from "./pages/doctor/appointment/Appointments";
 import ReceptionistAppointments from "./pages/receptionist/appointment/Appointments";
-import Signup from "./pages/auth/Signup";
-import ForgotPasswordForm from "./pages/auth/ForgotPasswordForm";
-import VerifyEmail from "./pages/auth/VerifyEmail";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Doctor Prescription Pages
@@ -23,9 +19,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signup/:role" element={<Signup />} />
-
         <Route
           path="/admin"
           element={
@@ -41,14 +34,6 @@ function App() {
           element={
             <ProtectedRoute requiredRole="DOCTOR">
               <Doctor />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctor/appointments"
-          element={
-            <ProtectedRoute requiredRole="DOCTOR">
-              <DoctorAppointments />
             </ProtectedRoute>
           }
         />
@@ -91,9 +76,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        <Route path="/forgot-password" element={<ForgotPasswordForm />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </QueryClientProvider>
