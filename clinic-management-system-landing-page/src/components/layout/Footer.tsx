@@ -29,7 +29,7 @@ const Footer = () => {
                 <div className="col-span-2">
                     <h3 className="font-serif text-2xl font-semibold">Truy cập nhanh</h3>
                     <div className="mt-[25px] flex flex-col gap-[15px]">
-                        {NAVIGATION_TABS.filter(tab => !tab.roles).map(tab => (
+                        {NAVIGATION_TABS.map(tab => (
                             <Link key={tab.href} to={tab.href}>
                                 <div className="flex items-center gap-[15px]">
                                     <FontAwesomeIcon icon={faCaretRight} size="lg" />

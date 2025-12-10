@@ -1,5 +1,4 @@
-import path from "path";
-import { Children, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 
 const ServicePage = lazy(()=> import('@/pages/ServicePage/ServicePage'));
 const ErrorPage = lazy(()=> import('@/pages/ErrorPage'))
