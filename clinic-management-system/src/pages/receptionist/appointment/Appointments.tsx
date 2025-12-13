@@ -19,6 +19,7 @@ import {
 import useAuthService from "@/services/authService";
 import useBookingService from "@/services/bookingService";
 import { useExaminationFlowService } from "@/services/examinationFlowService";
+import { FaArrowLeft } from "react-icons/fa6";
 
 type AppointmentFilterStatus = "ALL" | AppointmentState;
 
@@ -156,6 +157,12 @@ export default function Appointments() {
       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
+            <Link
+              to="/receptionist"
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white mr-2"
+            >
+              <FaArrowLeft />
+            </Link>
             <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
               <Calendar className="w-6 h-6 text-cyan-400" />
             </div>
@@ -167,12 +174,6 @@ export default function Appointments() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link
-              to="/receptionist"
-              className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              Quay lại
-            </Link>
             <LogoutButton />
           </div>
         </div>
