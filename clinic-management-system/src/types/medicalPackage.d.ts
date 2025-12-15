@@ -59,6 +59,7 @@ declare global {
     name: string;
     description: string;
     price: number;
+    prices: number[];
     medicalServices: MedicalServiceDTO[];
     image: string;
   }
