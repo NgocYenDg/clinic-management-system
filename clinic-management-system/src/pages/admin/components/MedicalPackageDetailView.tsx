@@ -188,6 +188,37 @@ export default function MedicalPackageDetailView({
               <h3 className="text-lg font-semibold text-white mb-2">Mô tả</h3>
               <p className="text-gray-300">{packageData.description}</p>
             </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Dịch vụ bao gồm
+              </h3>
+              <div className="space-y-2">
+                {packageData.medicalServices.map((service) => (
+                  <div
+                    key={service.medicalServiceId}
+                    className="bg-white/5 rounded-lg p-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-medium text-white">{service.name}</p>
+                        <p className="text-sm text-gray-400">
+                          {service.departmentName}
+                        </p>
+                      </div>
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                        Ưu tiên: {service.processingPriority}
+                      </span>
+                    </div>
+                    {service.description && (
+                      <p className="text-sm text-gray-400 mt-2">
+                        {service.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
