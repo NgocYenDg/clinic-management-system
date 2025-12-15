@@ -24,6 +24,7 @@ import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import useStaffService from "../../services/staffService";
 import useMedicalPackageService from "../../services/medicalPackageService";
 import useAuthService from "@/services/authService";
+import toast from "react-hot-toast";
 
 type TabType = "staff" | "department" | "medical-package" | "medical-service";
 
@@ -144,7 +145,7 @@ export default function Admin() {
       name: "",
       description: "",
       serviceIds: [],
-      price: 0,
+      price: null,
       image: "",
     });
 
@@ -167,8 +168,9 @@ export default function Admin() {
       setShowCreateModal(false);
       resetStaffForm();
       staffs.refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating staff:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi tạo nhân viên");
     }
   };
 
@@ -193,8 +195,11 @@ export default function Admin() {
       setSelectedStaff(null);
       resetStaffForm();
       staffs.refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating staff:", error);
+      toast.error(
+        error.response?.data?.message || "Lỗi khi cập nhật nhân viên"
+      );
     }
   };
 
@@ -264,7 +269,7 @@ export default function Admin() {
       name: "",
       description: "",
       serviceIds: [],
-      price: 0,
+      price: null,
       image: "",
     });
   };
@@ -310,7 +315,7 @@ export default function Admin() {
         updateMedicalPackagePrice.mutateAsync({
           id: selectedMedicalPackage.medicalPackageId,
           request: {
-            price: medicalPackageFormData.price,
+            price: medicalPackageFormData.price ?? 0,
           },
         }),
       ]);
@@ -431,7 +436,7 @@ export default function Admin() {
     setMedicalPackageFormData({
       name: pkg.name,
       description: pkg.description,
-      price: pkg.price,
+      price: pkg.price ?? null,
       image: pkg.image || "",
       serviceIds: pkg.services?.map((s) => s.medicalServiceId) || [],
     });

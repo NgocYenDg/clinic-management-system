@@ -30,9 +30,9 @@ const ConfirmationDialog = ({ Trigger, title, body, dialogClassName, onConfirm }
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription></DialogDescription>
                 </DialogHeader>
-                <div className="border-b-2"></div>
+                <div className="border-b border-b-gray-300"></div>
                 <p>{body}</p>
-                <div className="border-b-2"></div>
+                <div className="border-b border-b-gray-300"></div>
                 <DialogFooter>
                     <Button text="Hủy bỏ" variant="danger" onClick={handleClose} />
                     <Button text="Xác nhận" variant="success" onClick={handleConfirm} />

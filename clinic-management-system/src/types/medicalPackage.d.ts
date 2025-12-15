@@ -13,7 +13,7 @@ declare global {
     name: string;
     description: string;
     serviceIds: string[];
-    price: number;
+    price?: number | null;
     image: string;
   }
 

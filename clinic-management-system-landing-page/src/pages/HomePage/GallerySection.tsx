@@ -27,29 +27,40 @@ const GallerySection = () => {
                 ) : (
                     <div className="grid grid-cols-4 gap-4 px-3">
                         {medicalPackages.data?.content?.map(medicalPackage => (
-                            <div key={medicalPackage.name} className="flex flex-col overflow-hidden rounded-3xl">
-                                <img
-                                    src={medicalPackage.image || '/images/canlamsang.png'}
-                                    alt={medicalPackage.name}
-                                    className="aspect-8/5 bg-cover bg-center"
-                                />
-                                <div className="flex flex-1 flex-col gap-4 bg-white p-4">
-                                    <div>
-                                        <p className="font-serif text-[25px] font-semibold text-balance">{medicalPackage.name}</p>
-                                        <div className="mt-[15px] line-clamp-3 text-lg text-[#6E6E6E]">{medicalPackage.description}</div>
+                            <div
+                                key={medicalPackage.medicalPackageId}
+                                className="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                            >
+                                <div className="h-56 w-full overflow-hidden">
+                                    <img
+                                        src={medicalPackage.image || '/images/canlamsang.png'}
+                                        alt={medicalPackage.name}
+                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                </div>
+                                <div className="flex flex-1 flex-col p-6">
+                                    <div className="mb-4">
+                                        <h3 className="line-clamp-2 min-h-[3.5rem] font-serif text-xl font-bold text-gray-900">
+                                            {medicalPackage.name}
+                                        </h3>
+                                        <p className="mt-3 line-clamp-3 text-sm text-gray-600">{medicalPackage.description}</p>
                                     </div>
-                                    <div className="border-black-200 border-t pt-4">
-                                        <p className="flex justify-between font-serif text-[25px] font-semibold text-balance">
-                                            <span>Giá:</span>
-                                            <span>{medicalPackage.price.toLocaleString('vi-VN')} VNĐ</span>
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center justify-center gap-6">
+
+                                    <div className="mt-auto space-y-4">
+                                        <div className="border-t border-gray-100 pt-4">
+                                            <div className="flex items-baseline justify-between">
+                                                <span className="text-sm font-medium text-gray-500">Giá dịch vụ</span>
+                                                <span className="text-accent font-serif text-xl font-bold">
+                                                    {medicalPackage.price.toLocaleString('vi-VN')} đ
+                                                </span>
+                                            </div>
+                                        </div>
+
                                         <button
-                                            className="bg-accent text-ivory hover:bg-accent/90 flex h-[60px] w-[230px] cursor-pointer items-center justify-center rounded-full font-semibold tracking-widest uppercase"
+                                            className="bg-accent hover:bg-accent/90 w-full rounded-full py-3 text-sm font-bold tracking-widest text-white uppercase transition-all hover:shadow-lg active:scale-95"
                                             onClick={() => navigate(`/book-appointment?medicalPackageId=${medicalPackage.medicalPackageId}`)}
                                         >
-                                            Đặt lịch
+                                            Đặt lịch ngay
                                         </button>
                                     </div>
                                 </div>
