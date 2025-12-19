@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   UserCog,
   Users,
@@ -23,8 +23,10 @@ import MedicalServiceFormModal from "./components/MedicalServiceFormModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import useStaffService from "../../services/staffService";
 import useMedicalPackageService from "../../services/medicalPackageService";
+import { useFileService } from "../../services/fileService";
 import useAuthService from "@/services/authService";
 import toast from "react-hot-toast";
+import { Upload, Download } from "lucide-react";
 
 type TabType = "staff" | "department" | "medical-package" | "medical-service";
 
@@ -94,6 +96,12 @@ export default function Admin() {
     deleteMedicalPackage,
     updateMedicalService,
     deleteMedicalService,
+    exportMedicalPackages,
+    importMedicalPackages,
+    exportMedicalServices,
+    importMedicalServices,
+    getMedicalPackageImportStatus,
+    getMedicalServiceImportStatus,
   } = useMedicalPackageService({
     medicalPackagesParams:
       activeTab === "medical-package"
@@ -113,6 +121,114 @@ export default function Admin() {
     medicalPackageId: selectedMedicalPackageId,
     medicalServiceId: selectedMedicalService?.medicalServiceId ?? undefined,
   });
+
+  const { uploadFile } = useFileService();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = async () => {
+    try {
+      let blob;
+      let filename;
+
+      if (activeTab === "medical-package") {
+        blob = await exportMedicalPackages({
+          keyword: medicalPackageSearchKeyword || undefined,
+        });
+        filename = "medical_packages.csv";
+      } else if (activeTab === "medical-service") {
+        blob = await exportMedicalServices({
+          keyword: medicalServiceSearchKeyword || undefined,
+        });
+        filename = "medical_services.csv";
+      }
+
+      if (blob && filename) {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success("Xuất dữ liệu thành công");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Xuất dữ liệu thất bại");
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const toastId = toast.loading("Đang tải lên tệp...");
+
+    try {
+      const uploadResponse = await uploadFile.mutateAsync(file);
+      let bulkId: string;
+      let checkStatusFn: (id: string) => Promise<BulkImportStatusView>;
+
+      if (activeTab === "medical-package") {
+        toast.loading("Đang bắt đầu nhập dữ liệu gói khám...", { id: toastId });
+        const res = await importMedicalPackages.mutateAsync(uploadResponse.url);
+        bulkId = res.bulkId;
+        checkStatusFn = getMedicalPackageImportStatus;
+      } else if (activeTab === "medical-service") {
+        toast.loading("Đang bắt đầu nhập dữ liệu dịch vụ...", { id: toastId });
+        const res = await importMedicalServices.mutateAsync(uploadResponse.url);
+        bulkId = res.bulkId;
+        checkStatusFn = getMedicalServiceImportStatus;
+      } else {
+        return;
+      }
+
+      // Polling status
+      const pollInterval = 2000; // 2 seconds
+      const maxAttempts = 60; // 2 minutes timeout
+      let attempts = 0;
+
+      while (attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        const statusView = await checkStatusFn(bulkId);
+
+        if (statusView.status === "COMPLETED") {
+          toast.success(
+            `Nhập dữ liệu thành công: ${statusView.successfulRows} dòng thành công, ${statusView.failedRows} dòng thất bại`,
+            { id: toastId }
+          );
+          return;
+        } else if (statusView.status === "FAILED") {
+          toast.error(
+            `Nhập dữ liệu thất bại: ${statusView.failedRows} dòng lỗi`,
+            { id: toastId }
+          );
+          return;
+        }
+
+        toast.loading(`Đang xử lý... (${statusView.status})`, { id: toastId });
+        attempts++;
+      }
+
+      toast.error("Quá thời gian xử lý, vui lòng kiểm tra lại sau", {
+        id: toastId,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Nhập dữ liệu thất bại", { id: toastId });
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   // Form state for create/edit staff
   const [staffFormData, setStaffFormData] = useState<CreateStaffRequest>({
@@ -629,21 +745,51 @@ export default function Admin() {
           </div>
 
           {/* Add Button */}
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
-          >
-            <UserPlus className="w-5 h-5" />
-            <span>
-              {activeTab === "staff"
-                ? "Thêm nhân viên"
-                : activeTab === "department"
-                ? "Thêm phòng ban"
-                : activeTab === "medical-package"
-                ? "Thêm gói khám"
-                : "Thêm dịch vụ"}
-            </span>
-          </button>
+          <div className="flex items-center space-x-2">
+            {(activeTab === "medical-package" ||
+              activeTab === "medical-service") && (
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".csv"
+                />
+                <button
+                  onClick={handleImportClick}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg font-medium transition-colors flex items-center space-x-2 border border-white/10"
+                  title="Nhập từ CSV"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span>Nhập</span>
+                </button>
+                <button
+                  onClick={handleExport}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg font-medium transition-colors flex items-center space-x-2 border border-white/10"
+                  title="Xuất ra CSV"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Xuất</span>
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+            >
+              <UserPlus className="w-5 h-5" />
+              <span>
+                {activeTab === "staff"
+                  ? "Thêm nhân viên"
+                  : activeTab === "department"
+                  ? "Thêm phòng ban"
+                  : activeTab === "medical-package"
+                  ? "Thêm gói khám"
+                  : "Thêm dịch vụ"}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Search and Filter - Only show for staff tab */}
