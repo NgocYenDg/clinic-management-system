@@ -32,6 +32,8 @@ type TabType = "staff" | "department" | "medical-package" | "medical-service";
 
 export default function Admin() {
   const { account } = useAuthService();
+  const staffId = account.data?.staffId;
+  const { staff } = useStaffService({ staffId });
   const [activeTab, setActiveTab] = useState<TabType>("staff");
   const [staffSearchKeyword, setStaffSearchKeyword] = useState("");
   const [departmentSearchKeyword, setDepartmentSearchKeyword] = useState("");
@@ -616,6 +618,8 @@ export default function Admin() {
     setMedicalServiceFormData((prev) => ({ ...prev, ...data }));
   };
 
+  const role = staff.data?.role || account.data?.role;
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
       {/* Header */}
@@ -965,6 +969,45 @@ export default function Admin() {
               )}
             </>
           )}
+        </div>
+
+        {/* User Info Card */}
+        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+          <h2 className="text-xl font-bold mb-4">Thông tin tài khoản</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-slate-400 text-sm">Email</p>
+              <p className="text-white font-medium">
+                {staff.data?.email || "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Chức vụ</p>
+              <p className="text-blue-400 font-medium capitalize">
+                {role === 0 || role === "DOCTOR"
+                  ? "Doctor"
+                  : role === 1 || role === "RECEPTIONIST"
+                  ? "Receptionist"
+                  : role === 2 || role === "MANAGER"
+                  ? "Manager"
+                  : role === 3 || role === "ADMIN"
+                  ? "Admin"
+                  : "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Họ và tên</p>
+              <p className="text-white font-medium">
+                {staff.data?.name || "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Phòng ban</p>
+              <p className="text-white font-medium">
+                {staff.data?.departmentName || "N/A"}
+              </p>
+            </div>
+          </div>
         </div>
       </main>
 
